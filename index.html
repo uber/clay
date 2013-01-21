@@ -834,6 +834,19 @@ http://www.gnu.org/software/src-highlite -->
 clay-devserver</tt></pre></div></div>
 <div class="paragraph"><p>The <code>CLAY_ENVIRONMENT</code> variable <strong>must</strong> be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. <code>CLAY_CONFIG</code> is a colon delimited list of config files to be loaded, in order of precedence. For example, if <code>CLAY_CONFIG=./common.conf:./janky.conf</code>, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.</p></div>
 </div>
+<div class="sect2">
+<h3 id="_running_a_clay_service_in_production">Running a clay service in production</h3>
+<div class="paragraph"><p>Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the <code>CLAY_ENVIRONMENT</code> and <code>CLAY_CONFIG</code> environment variables need to be set. All view modules listed in the config will be imported at startup.</p></div>
+<div class="listingblock">
+<div class="title">Running a production clay service with gunicorn</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_ENVIRONMENT</span><span style="color: #990000">=</span>production
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
+gunicorn clay<span style="color: #990000">.</span>wsgi<span style="color: #990000">:</span>application</tt></pre></div></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -958,7 +971,7 @@ mail<span style="color: #990000">.</span><span style="font-weight: bold"><span s
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br />
-Last updated 2013-01-21 22:31:50 UTC
+Last updated 2013-01-21 23:10:38 UTC
 </div>
 </div>
 </body>
