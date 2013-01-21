@@ -2,9 +2,12 @@
 from setuptools import setup
 
 setup(
-    name='clay',
+    name='clay-flask',
+    version='1.0',
+    author='Jeremy Grosser',
+    author_email='jeremy@uber.com',
     packages=['clay'],
-    description='Uber backend service framework',
+    description='Clay is a framework for building RESTful backend services using best practices.',
     install_requires=[
         'flask',
     ],

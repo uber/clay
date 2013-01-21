@@ -4,3 +4,6 @@ It’s a wrapper around Flask (http://flask.pocoo.org) along with several conven
 
 Clay is available under the MIT License.
 Documentation is available at http://uber.github.com/clay/
+
+Git repository: https://github.com/uber/clay.git
+Install via PyPI: pip install clay-flask
