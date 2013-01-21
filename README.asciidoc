@@ -13,7 +13,7 @@ If you're developing a new service, you've come to the right place. Let's start 
 
 [source,python]
 --------------------------------------------------------------------------------
-include::examples/helloworld.py[]
+include::docs/helloworld.py[]
 --------------------------------------------------------------------------------
 
 A few noteworthy things here that begin our list of best practices...
@@ -28,7 +28,7 @@ Every Clay application needs a config. Clay configs are JSON files. The clay fra
 
 [source,javascript]
 --------------------------------------------------------------------------------
-include::examples/simple-clay.conf[]
+include::docs/simple-clay.conf[]
 --------------------------------------------------------------------------------
 
 This is the minimum configuration necessary to run the clay devserver. The first flask init section is the module name passed to the Flask app constructor. This is only used for uniquely identifying this application internally and has no bearing on anything important. It should follow the http://www.python.org/dev/peps/pep-0008/#package-and-module-names[naming rules] for Python modules. Here we use `helloworldapp` just to differentiate it from the name of our view module.
