@@ -1,0 +1,154 @@
+Clay Framework
+==============
+Jeremy Grosser <jeremy@uber.com>
+v1.0, 2013-01-21
+:toc:
+
+Clay is a framework for building RESTful backend services using best practices. It's a wrapper around Flask (http://flask.pocoo.org) along with several convenient, standardized, performance enhanced ways of performing common tasks like sending email and connecting to a database. Clay is available under the MIT License.
+
+== Getting Started
+
+=== Writing a new service
+If you're developing a new service, you've come to the right place. Let's start with the obligatory Hello World. You'll notice that this is very similar to http://flask.pocoo.org/docs/quickstart/#a-minimal-application[Flask's Hello World example].
+
+[source,python]
+--------------------------------------------------------------------------------
+include::examples/helloworld.py[]
+--------------------------------------------------------------------------------
+
+A few noteworthy things here that begin our list of best practices...
+
+- Every module starts with `from __future__ import absolute_import`, this is to prevent large projects from ending up with cyclical imports.
+- Along those same lines, wildcard imports like `from foo import *` should *never* be used. *Always* explicitly list the things you're importing from a module.
+- `from` imports should be avoided when practical. In the middle of a thousand-line file, it might not be obvious that `mail.send(...)` is really `clay.mail.send(...)` and not an instance of a local object.
+- Keep reasonably close to PEP8 recommendations. Four space tabs, two newlines between top-level definitions in a module, etc. If you like keeping things to 80 columns, that's fine, but if a line needs to be longer, nobody's going to complain.
+- Explicitly list the methods that a route responds to. We know that `app.route()` defaults to GET methods only, but this is not guaranteed to be the same in future versions of Flask/Clay.
+
+Every Clay application needs a config. Clay configs are JSON files. The clay framework itself looks for a few config variables (TODO: see below). By default, we look for files listed in `$CLAY_CONFIG` delimited by colons `:` relative to the directory the development server runs from. Here's a simple example.
+
+[source,javascript]
+--------------------------------------------------------------------------------
+include::examples/simple-clay.conf[]
+--------------------------------------------------------------------------------
+
+This is the minimum configuration necessary to run the clay devserver. The first flask init section is the module name passed to the Flask app constructor. This is only used for uniquely identifying this application internally and has no bearing on anything important. It should follow the http://www.python.org/dev/peps/pep-0008/#package-and-module-names[naming rules] for Python modules. Here we use `helloworldapp` just to differentiate it from the name of our view module.
+
+The debug server section provides a host and port for the clay devserver to listen on. No magic here, just an IP and port. Use "0.0.0.0" for the host to listen on all interfaces.
+
+`views` is a list of modules to be loaded when the server starts up. This allows you to run multiple view modules simultaneously without having to manage a file with a list of routes or prefixes.
+
+Now that we've got a view module and a config, we can run the clay devserver...
+
+=== Running the development server
+[source,shell]
+--------------------------------------------------------------------------------
+export CLAY_ENVIRONMENT=development
+export CLAY_CONFIG=./simple-clay.conf
+clay-devserver
+--------------------------------------------------------------------------------
+
+The `CLAY_ENVIRONMENT` variable *must* be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. `CLAY_CONFIG` is a colon delimited list of config files to be loaded, in order of precedence. For example, if `CLAY_CONFIG=./common.conf:./janky.conf`, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.
+
+== API Reference
+
+=== clay.config
+The `clay.config` module provides a simple API for accessing configuration information. Internally, all Clay modules use this module to configure themselves.
+
+Upon import, clay.config attempts to load it's configuration from files listed in the `CLAY_CONFIG` environment variable, delimited by colons. Each file is parsed using Python's builtin json module, then applied to the global config with a simple `dict.update()`.
+
+This module registers itself as a handler for SIGHUP and will attempt to reload it's configuration upon receiving that signal. The configuration may also be reloaded on demand by calling `config.load()`.
+
+Several methods are exposed at the top level of the clay.config module and are intended to provide the config's public API.
+
+==== clay.config.get(key, default=None)
+`key` is a period `.` delimited string that is recursively searched for a configuration option with that name. If this lookup fails at any level of the config hierarchy, the value of `default` is returned. For example, you can expect the following behavior for the given config.
+
+.Example configuration
+[source,javascript]
+--------------------------------------------------------------------------------
+{
+	"users": {
+		"admins": ["synack", "bigo"],
+	}
+}
+--------------------------------------------------------------------------------
+
+[source,python]
+--------------------------------------------------------------------------------
+>>> from clay import config
+>>> config.get('users.admins')
+[u"synack", u"bigo"]
+>>> config.get('users.players')
+None
+>>> config.get('dogs')
+None
+>>> config.get('dogs', default=True)
+True
+--------------------------------------------------------------------------------
+
+==== clay.config.get_logger(name)
+Returns a pre-configured `logging.Logger` instance identified by the given name. Depending on the framework's environment, this logger may format and emit messages in different ways. In development, messages will be routed to the console whereas in production they might be routed to an aggregate endpoint or archive.
+
+[source,python]
+--------------------------------------------------------------------------------
+>>> from clay.config import config
+>>> log = config.get_logger('myservice')
+>>> log.debug('Now we know what\'s happening!')
+myservice DEBUG Now we know what's happening!
+--------------------------------------------------------------------------------
+
+==== clay.config.debug()
+A simple method that returns a boolean. True if this is a development environment, False otherwise. *DO NOT* use the result of this function to enable or disable functionality. Use `clay.config.feature_flag()` instead.
+
+==== clay.config.feature_flag(name)
+Similar to `clay.config.get`, feature_flag is specific to things with boolean values that enable or disable functionality within your service. This method returns True if the given feature is enabled, False otherwise.
+
+.Example configuration
+[source,javascript]
+--------------------------------------------------------------------------------
+{
+	"features": {
+		"new_shiny_bits": {
+			"enabled": true
+		},
+		"new_scary_thing": {
+			"enabled": true,
+			"percent": 10.0
+		}
+	}
+}
+--------------------------------------------------------------------------------
+
+In the example above, `feature_flag('new_shiny_bits')` would return True and `feature_flag('new_scary_thing')` will only return True 10% of the time. The percent option is useful for A/B testing new features or slowly rolling out a feature for a subset of requests to gauge performance.
+
+==== clay.config.load()
+This method will cause the configuration to be reloaded from it's source on demand. *WARNING* if a syntax error or otherwise unreadable configuration is loaded, the process calling this method will be aborted immediately via sys.exit(), this is often not desirable.
+
+=== clay.mail
+
+==== clay.mail.sendmail(mailto, subject, message)
+Sends an email to the given address using the server/credentials specified in the config under `smtp`.
+
+.Mail configuration
+[source,javascript]
+--------------------------------------------------------------------------------
+{
+	"smtp": {
+		"host": "smtp.example.com",
+		"port": 25,
+		"username": "myname",
+		"password": "superseekrit"
+	}
+}
+--------------------------------------------------------------------------------
+
+.Sending email
+[source,python]
+--------------------------------------------------------------------------------
+from clay import mail
+
+mail.sendmail(
+	mailto='example@uber.com',
+	subject='Not spam I promise!',
+	message='This is just an example of an email')
+--------------------------------------------------------------------------------
