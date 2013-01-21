@@ -49,6 +49,17 @@ clay-devserver
 
 The `CLAY_ENVIRONMENT` variable *must* be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. `CLAY_CONFIG` is a colon delimited list of config files to be loaded, in order of precedence. For example, if `CLAY_CONFIG=./common.conf:./janky.conf`, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.
 
+=== Running a clay service in production
+Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the `CLAY_ENVIRONMENT` and `CLAY_CONFIG` environment variables need to be set. All view modules listed in the config will be imported at startup. 
+
+.Running a production clay service with gunicorn
+[source,shell]
+--------------------------------------------------------------------------------
+export CLAY_ENVIRONMENT=production
+export CLAY_CONFIG=./simple-clay.conf
+gunicorn clay.wsgi:application
+--------------------------------------------------------------------------------
+
 == API Reference
 
 === clay.config
