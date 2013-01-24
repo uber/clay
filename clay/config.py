@@ -4,6 +4,7 @@ import logging
 import random
 import signal
 import json
+import yaml
 import time
 import os.path
 import os
@@ -44,12 +45,14 @@ class Configuration(object):
 
         self.config = {}
         paths = list(self.paths)
+
         if 'CLAY_CONFIG' in os.environ:
             paths += os.environ['CLAY_CONFIG'].split(':')
 
         for path in paths:
             path = os.path.expandvars(path)
             path = os.path.abspath(path)
+            print "PATH %s" % path
             config = self.load_from_file(path)
             self.config.update(config)
 
@@ -63,7 +66,10 @@ class Configuration(object):
         '''
 
         try:
-            config = json.load(file(filename, 'r'))
+            if filename and os.path.splitext(filename)[-1].lower() == '.yaml' :
+                config = yaml.load(file(filename,'r'))
+            else:
+                config = json.load(file(filename, 'r'))
             sys.stderr.write('Loaded configuration from %s\n' % filename)
             return config
         except ValueError, e:
