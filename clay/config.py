@@ -12,6 +12,14 @@ import sys
 from clay import logger
 
 
+SERIALIZERS = {'json': json}
+
+try:
+    import yaml
+    SERIALIZERS['yaml'] = yaml
+except ImportError: pass
+
+
 class Configuration(object):
     '''
     Manages global configuration from JSON files
@@ -44,6 +52,7 @@ class Configuration(object):
 
         self.config = {}
         paths = list(self.paths)
+
         if 'CLAY_CONFIG' in os.environ:
             paths += os.environ['CLAY_CONFIG'].split(':')
 
@@ -63,7 +72,13 @@ class Configuration(object):
         '''
 
         try:
-            config = json.load(file(filename, 'r'))
+            filetype = os.path.splitext(filename)[-1].lstrip('.').lower()
+            if not filetype in SERIALIZERS:
+                sys.stderr.write('Unknown config format %s, parsing as JSON\n' % filetype)
+                filetype = 'json'
+            load = SERIALIZERS[filetype].load
+
+            config = load(file(filename, 'r'))
             sys.stderr.write('Loaded configuration from %s\n' % filename)
             return config
         except ValueError, e:

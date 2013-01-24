@@ -65,7 +65,13 @@ gunicorn clay.wsgi:application
 === clay.config
 The `clay.config` module provides a simple API for accessing configuration information. Internally, all Clay modules use this module to configure themselves.
 
-Upon import, clay.config attempts to load it's configuration from files listed in the `CLAY_CONFIG` environment variable, delimited by colons. Each file is parsed using Python's builtin json module, then applied to the global config with a simple `dict.update()`.
+Upon import, clay.config attempts to load it's configuration from
+files listed in the `CLAY_CONFIG` environment variable, delimited by
+colons. Each file's name is examined for a known file extension and
+parsed by the appropriate deserializer. Currently json is supported
+using the standard library and yaml is supported if PyYAML is
+installed. As each file is parsed, it is applied to the global config
+with `dict.update()`.
 
 This module registers itself as a handler for SIGHUP and will attempt to reload it's configuration upon receiving that signal. The configuration may also be reloaded on demand by calling `config.load()`.
 
