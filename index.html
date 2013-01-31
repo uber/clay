@@ -855,7 +855,13 @@ gunicorn clay<span style="color: #990000">.</span>wsgi<span style="color: #99000
 <div class="sect2">
 <h3 id="_clay_config">clay.config</h3>
 <div class="paragraph"><p>The <code>clay.config</code> module provides a simple API for accessing configuration information. Internally, all Clay modules use this module to configure themselves.</p></div>
-<div class="paragraph"><p>Upon import, clay.config attempts to load it&#8217;s configuration from files listed in the <code>CLAY_CONFIG</code> environment variable, delimited by colons. Each file is parsed using Python&#8217;s builtin json module, then applied to the global config with a simple <code>dict.update()</code>.</p></div>
+<div class="paragraph"><p>Upon import, clay.config attempts to load it&#8217;s configuration from
+files listed in the <code>CLAY_CONFIG</code> environment variable, delimited by
+colons. Each file&#8217;s name is examined for a known file extension and
+parsed by the appropriate deserializer. Currently json is supported
+using the standard library and yaml is supported if PyYAML is
+installed. As each file is parsed, it is applied to the global config
+with <code>dict.update()</code>.</p></div>
 <div class="paragraph"><p>This module registers itself as a handler for SIGHUP and will attempt to reload it&#8217;s configuration upon receiving that signal. The configuration may also be reloaded on demand by calling <code>config.load()</code>.</p></div>
 <div class="paragraph"><p>Several methods are exposed at the top level of the clay.config module and are intended to provide the config&#8217;s public API.</p></div>
 <div class="sect3">
@@ -971,7 +977,7 @@ mail<span style="color: #990000">.</span><span style="font-weight: bold"><span s
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br />
-Last updated 2013-01-21 23:10:38 UTC
+Last updated 2013-01-31 09:58:15 UTC
 </div>
 </div>
 </body>
