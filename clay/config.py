@@ -16,6 +16,7 @@ SERIALIZERS = {'json': json}
 
 try:
     import yaml
+    yaml.load = yaml.safe_load
     SERIALIZERS['yaml'] = yaml
 except ImportError: pass
 
@@ -79,6 +80,8 @@ class Configuration(object):
             load = SERIALIZERS[filetype].load
 
             config = load(file(filename, 'r'))
+            if not config:
+                raise ValueError('Empty config')
             sys.stderr.write('Loaded configuration from %s\n' % filename)
             return config
         except ValueError, e:
