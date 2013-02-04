@@ -16,7 +16,6 @@ SERIALIZERS = {'json': json}
 
 try:
     import yaml
-    yaml.load = yaml.safe_load
     SERIALIZERS['yaml'] = yaml
 except ImportError: pass
 
@@ -77,7 +76,10 @@ class Configuration(object):
             if not filetype in SERIALIZERS:
                 sys.stderr.write('Unknown config format %s, parsing as JSON\n' % filetype)
                 filetype = 'json'
-            load = SERIALIZERS[filetype].load
+
+            # Try getting a safe_load function. If absent, use 'load'.
+            load = getattr(SERIALIZERS[filetype], "safe_load",
+                           getattr(SERIALIZERS[filetype], "load"))
 
             config = load(file(filename, 'r'))
             if not config:
