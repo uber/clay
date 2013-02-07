@@ -40,10 +40,11 @@ class Configuration(object):
         else:
             return False
 
-    def load(self, signum=None, frame=None):
+    def load(self, signum=None, frame=None, silent=False):
         '''
         Iterate through expected config file paths, loading the ones that
-        exist and can be parsed.
+        exist and can be parsed. Can pass "silent=True" as a argument to
+        suppress all output.
         '''
 
         cwd = os.getcwd()
@@ -59,16 +60,17 @@ class Configuration(object):
         for path in paths:
             path = os.path.expandvars(path)
             path = os.path.abspath(path)
-            config = self.load_from_file(path)
+            config = self.load_from_file(path, silent=silent)
             self.config.update(config)
 
         self.init_remote_logging()
         self.last_updated = time.time()
 
-    def load_from_file(self, filename):
+    def load_from_file(self, filename, silent=False):
         '''
         Attempt to load configuration from the given filename. Returns an empty
-        dict upon failure.
+        dict upon failure.Can pass "silent=True" as a argument to
+        suppress all output.
         '''
 
         try:
@@ -84,10 +86,13 @@ class Configuration(object):
             config = load(file(filename, 'r'))
             if not config:
                 raise ValueError('Empty config')
-            sys.stderr.write('Loaded configuration from %s\n' % filename)
+
+            if not silent:
+                sys.stderr.write('Loaded configuration from %s\n' % filename)
             return config
         except ValueError, e:
-            sys.stderr.write('Error loading config from %s: %s\n' %
+            if not silent:
+                sys.stderr.write('Error loading config from %s: %s\n' %
                 (filename, str(e)))
             sys.exit(1)
             return {}
@@ -107,6 +112,22 @@ class Configuration(object):
                 return default
         #sys.stderr.write('config: %s=%r\n' % (key, value))
         return value
+
+    def set(self, key, value):
+        '''
+        Set a given configuration value, using dots as delimiters for
+        nested objects. Example: config.CONFIG.set('api.host.port', 1337)
+        sets config['api']['host']['port'] to 1337. Raises KeyError if any
+        of the intermediate keys are missing.
+        '''
+
+        val = self.config
+        keys = key.split('.')
+
+        for k in keys[:-1]:
+            val = val[k]
+
+        val[keys[-1]] = value
 
     def init_logging(self):
         '''
