@@ -1,3 +1,9 @@
+clay (1.1) unstable; urgency=low
+
+  * Bugfixes and YAML support
+
+ -- Jeremy Grosser <jeremy@uber.com>  Sat,  9 Feb 2013 00:26:05 +0000
+
 clay (1.0) unstable; urgency=low
 
   * Initial release
