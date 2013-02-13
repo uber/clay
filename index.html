@@ -970,6 +970,27 @@ mail<span style="color: #990000">.</span><span style="font-weight: bold"><span s
         message<span style="color: #990000">=</span><span style="color: #FF0000">'This is just an example of an email'</span><span style="color: #990000">)</span></tt></pre></div></div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_clay_http">clay.http</h3>
+<div class="sect3">
+<h4 id="_clay_http_request_method_uri_headers_data">clay.http.request(method, uri, headers, data)</h4>
+<div class="paragraph"><p>Performs an HTTP request and returns a Response object (which is just
+a namedtuple) with status, headers, and data attributes. This module
+is just a wrapper around urllib2 so any installed openers or redirect
+handlers will be used. See the urllib2 docs for more information
+(<a href="http://docs.python.org/2/library/urllib2.html">http://docs.python.org/2/library/urllib2.html</a>).</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">from</span></span> clay <span style="font-weight: bold"><span style="color: #000080">import</span></span> http
+
+response <span style="color: #990000">=</span> http<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">request</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'GET'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'http://httpbin.org/ip'</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">if</span></span> response<span style="color: #990000">.</span>status <span style="color: #990000">!=</span> <span style="color: #993399">200</span><span style="color: #990000">:</span>
+  <span style="font-weight: bold"><span style="color: #0000FF">print</span></span> <span style="color: #FF0000">'Something bad happened: '</span><span style="color: #990000">,</span> response<span style="color: #990000">.</span>data</tt></pre></div></div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -977,7 +998,7 @@ mail<span style="color: #990000">.</span><span style="font-weight: bold"><span s
 <div id="footer">
 <div id="footer-text">
 Version 1.1<br />
-Last updated 2013-02-09 00:31:41 UTC
+Last updated 2013-02-13 20:29:42 UTC
 </div>
 </div>
 </body>
