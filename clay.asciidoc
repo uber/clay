@@ -169,3 +169,21 @@ mail.sendmail(
 	subject='Not spam I promise!',
 	message='This is just an example of an email')
 --------------------------------------------------------------------------------
+
+=== clay.http
+
+==== clay.http.request(method, uri, headers, data)
+Performs an HTTP request and returns a Response object (which is just
+a namedtuple) with status, headers, and data attributes. This module
+is just a wrapper around urllib2 so any installed openers or redirect
+handlers will be used. See the urllib2 docs for more information
+(http://docs.python.org/2/library/urllib2.html).
+
+[source,python]
+--------------------------------------------------------------------------------
+from clay import http
+
+response = http.request('GET', 'http://httpbin.org/ip')
+if response.status != 200:
+  print 'Something bad happened: ', response.data
+--------------------------------------------------------------------------------
