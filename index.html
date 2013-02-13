@@ -979,6 +979,10 @@ a namedtuple) with status, headers, and data attributes. This module
 is just a wrapper around urllib2 so any installed openers or redirect
 handlers will be used. See the urllib2 docs for more information
 (<a href="http://docs.python.org/2/library/urllib2.html">http://docs.python.org/2/library/urllib2.html</a>).</p></div>
+<div class="paragraph"><p><strong>WARNING</strong>: urllib2 supports opening <code>file://</code> URLs by default, meaning
+that the local filesystem is accessible via this interface. If you&#8217;re
+handling URLs that can be manipulated by a client, make sure to check
+that you&#8217;re not creating a security hole.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
@@ -998,7 +1002,7 @@ response <span style="color: #990000">=</span> http<span style="color: #990000">
 <div id="footer">
 <div id="footer-text">
 Version 1.1<br />
-Last updated 2013-02-13 20:29:42 UTC
+Last updated 2013-02-13 20:58:22 UTC
 </div>
 </div>
 </body>
