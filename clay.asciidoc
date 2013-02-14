@@ -50,7 +50,7 @@ clay-devserver
 The `CLAY_ENVIRONMENT` variable *must* be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. `CLAY_CONFIG` is a colon delimited list of config files to be loaded, in order of precedence. For example, if `CLAY_CONFIG=./common.conf:./janky.conf`, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.
 
 === Running a clay service in production
-Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the `CLAY_ENVIRONMENT` and `CLAY_CONFIG` environment variables need to be set. All view modules listed in the config will be imported at startup. 
+Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the `CLAY_ENVIRONMENT` and `CLAY_CONFIG` environment variables need to be set. All view modules listed in the config will be imported at startup.
 
 .Running a production clay service with gunicorn
 [source,shell]
@@ -192,3 +192,435 @@ response = http.request('GET', 'http://httpbin.org/ip')
 if response.status != 200:
   print 'Something bad happened: ', response.data
 --------------------------------------------------------------------------------
+
+== Useful Patterns
+
+=== Testing with Clay: Letting tests change clay's configuration
+
+Sometimes when unittesting, it may make sense to test various configuration settings. Using
+a base unittest like so:
+
+.Base Unittest
+[source, python]
+--------------------------------------------------------------------------------
+class CerebroTestCase(unittest.TestCase):
+
+    def __call__(self):
+
+        #Do pre-test stuff
+        self._pre_setup()
+
+        unittest.TestCase.__call__(self, result)
+
+        #Do post-test stuff
+        self._post_teardown()
+
+    def _pre_setup(self):
+        pass
+
+    def _post_teardown(self):
+        pass
+
+--------------------------------------------------------------------------------
+
+Since clay's configuration is stored as a dictionary, the trick is to use mock's
+http://www.voidspace.org.uk/python/mock/patch.html#patch-dict[patch dictionary]
+to replace the read-only dictionary with a malleable one:
+
+.Patched Unittest
+[source, python]
+--------------------------------------------------------------------------------
+class CerebroTestCase(unittest.TestCase):
+
+    def __call__(self):
+        #Copy configuration dictionary
+        self.config_copy = clay.config.CONFIG.config.copy()
+
+        #Do pre-test stuff
+        self._pre_setup()
+
+        #Patch config dictionary so tests can customize
+        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
+            unittest.TestCase.__call__(self, result)
+
+        #Do post-test stuff
+        self._post_teardown()
+
+    def _pre_setup(self):
+        pass
+
+    def _post_teardown(self):
+        pass
+
+--------------------------------------------------------------------------------
+
+Finally, you can specify an attribute on a test with a dictionary of clay.config keys
+and values to be applied to each test (in the example below, it's `test_config`), as
+well as a utility function so that the configuration can be manipulated for a single test:
+
+.Customizable Unittest
+[source, python]
+--------------------------------------------------------------------------------
+class CerebroTestCase(unittest.TestCase):
+
+    def __call__(self):
+
+        #Do pre-test stuff
+
+        self.config_copy = clay.config.CONFIG.config.copy()
+
+        self._pre_setup()
+
+        #Patch config dictionary so tests can customize
+        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
+            unittest.TestCase.__call__(self, result)
+
+        #Do post-test stuff
+        self._post_teardown()
+
+    def _pre_setup(self):
+        if hasattr(self, 'test_config'):
+            #Support ability for tests to have their own test settings
+            for attr, value in self.test_config.items():
+                self.set_config(attr, value)
+
+
+    def _post_teardown(self):
+        pass
+
+    def set_config(self, key, value):
+        """Helper function that tests can call to set config values."""
+
+        val = self.config_copy
+        keys = key.split('.')
+
+        for k in keys[:-1]:
+            val = val[k]
+
+        val[keys[-1]] = value
+
+--------------------------------------------------------------------------------
+
+An example test using the above patterns:
+
+.Customizable Unittest
+[source, python]
+--------------------------------------------------------------------------------
+class TestToast(CerebroTestCase):
+
+    #These values will apply to all tests in this class
+    test_config = {
+        'toast.one_sided': False,
+        'toast.two_sided': True
+    }
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_burnt_toast(self):
+        #These values will apply for only this test
+        self.set_config('toast.one_sided', True)
+        self.set_config('toast.two_sided', False)
+
+        self.toast = Toast()
+        #...test continues...
+--------------------------------------------------------------------------------
+
+=== Testing with Clay: Using Charlatan to manage fixtures
+
+http://uber.github.com/charlatan/[Charlatan] is another open sourced library from Uber for managing fixtures.
+The following patterns provide a way to integrate the charlatan fixture model into a unittesting framework.
+
+First add a filepath to your fixtures to your configuration file:
+.Fixture configuration
+[source,javascript]
+--------------------------------------------------------------------------------
+{
+    "testing": {
+        "fixture_filepath":  "cerebro/tests/fixtures.yaml"
+    }
+}
+--------------------------------------------------------------------------------
+
+Charlatan only needs to load the fixtures once, so it makes sense to do it when the package is setup.
+Adding this to the setup_package() method in the project's test/__init__.py accomplishes this when using nosetests.
+The following is an example from Uber's Cerebro project:
+
+.`test/__init__.py`
+[source, python]
+--------------------------------------------------------------------------------
+from __future__ import absolute_import
+import charlatan
+import os
+import clay
+
+#Get project path
+if os.environ.get("CEREBRO_HOME"):
+    #Get absolute project path from environmental variables
+    CEREBRO_PATH = os.path.join(os.environ["CEREBRO_HOME"], "cerebro")
+else:
+    #Get project path from relative path
+    CEREBRO_PATH = os.path.normpath(os.path.abspath(__file__) + "../../../..")
+
+
+def setup_package():
+    """Set up the environment for the whole test package.
+
+    Put here all the configuration that needs to be run only once.
+    """
+
+    #Import fixtures
+    if clay.config.get('testing.fixture_filepath'):
+
+        #Get fixture filepath
+        if str(CEREBRO_PATH) not in str(clay.config.get('testing.fixture_filepath')):
+            fixtures_filepath = os.path.join(CEREBRO_PATH, clay.config.get('testing.fixture_filepath'))
+        else:
+            fixtures_filepath = clay.config.get('testing.fixture_filepath')
+
+        #Load fixtures
+        charlatan.load(fixtures_filepath,
+                models_package="cerebro.model",
+                db_session=db_session)  # db_session is a sqlalchemy Session object, for saving fixtures
+
+def teardown_package():
+    pass
+--------------------------------------------------------------------------------
+
+Once the fixtures have been loaded, add charlatan's FixturesManagerMixin to your testcase to allow each test to access and manipulate fixtures. Generally, it saves time if each test can optionally specify a list of fixtures to be installed before each test; adding a few lines to `_pre_setup` takes care of the installation.
+
+.Fixture Test
+[source, python]
+--------------------------------------------------------------------------------
+class CerebroTestCase(unittest.TestCase, charlatan.FixturesManagerMixin):
+
+    def __call__(self):
+
+        #Do pre-test stuff
+
+        self.config_copy = clay.config.CONFIG.config.copy()
+
+        self._pre_setup()
+
+        #Patch config dictionary so tests can customize
+        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
+            unittest.TestCase.__call__(self, result)
+
+        #Do post-test stuff
+        self._post_teardown()
+
+    def _pre_setup(self):
+
+        self.clean_fixtures_cache()
+
+        if hasattr(self, 'test_config'):
+            #Support ability for tests to have their own test settings
+            for attr, value in self.test_config.items():
+                self.set_config(attr, value)
+
+        #install class fixtures
+        if hasattr(self, 'fixtures'):
+            self.install_fixtures(self.fixtures)
+
+
+    def _post_teardown(self):
+        self.clean_fixtures_cache()
+
+
+    def set_config(self, key, value):
+        """Helper function that tests can call to set config values."""
+
+        val = self.config_copy
+        keys = key.split('.')
+
+        for k in keys[:-1]:
+            val = val[k]
+
+        val[keys[-1]] = value
+--------------------------------------------------------------------------------
+
+Additionally, the full charlatan functionality is available in each unit test:
+
+.Fixture Unittest
+[source, python]
+--------------------------------------------------------------------------------
+class TestToast(CerebroTestCase):
+
+    #These fixtures will be installed with all tests
+    fixtures = ('toast', 'burnt_toast', 'bread')
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_toastiness(self):
+        is_burnt = self.toast.burnt  # installed fixtures can be accessed
+
+        self.install_fixture('wheat_bread')  # installs wheat_bread fixture for just this test.
+
+        toaster = self.get_fixture('toaster')  # can get fixtures manipulate them
+
+        toaster.num_slots = 4
+        toaster.save()
+
+        #...test continues
+
+--------------------------------------------------------------------------------
+
+=== Testing with Clay: Providing a clean test database for each test
+
+When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy's http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session[`scoped_session`] to accopmlish this goal.
+
+First, add a sqlalchemy configuration for your test database to clay's configuration file:
+
+.Test database configuration
+[source,javascript]
+--------------------------------------------------------------------------------
+{
+    "testing": {
+        "fixture_filepath":  "cerebro/tests/fixtures.yaml",
+        "database": {
+            "sqlalchemy.url": "postgresql://user:password@localhost:1234/test_database",
+            "echo": True
+        }
+    }
+}
+--------------------------------------------------------------------------------
+
+Then, have the engine start when the test package is started by adding to the setup_package() function started here. The following is an example from Uber's Cerebro project:
+
+.`test/__init__.py` with Test Database Engine
+[source, python]
+--------------------------------------------------------------------------------
+from __future__ import absolute_import
+import charlatan
+import os
+import clay
+
+from sqlalchemy import engine_from_config
+
+#db_session is a sqlalchemy scoped_session object
+#initialize_sql is a function to import Cerebro's models and initialize the sqlalchemy mappers
+from cerebro.model.basics import db_session, initialize_sql
+
+
+test_engine = None
+
+#Get project path
+if os.environ.get("CEREBRO_HOME"):
+    #Get absolute project path from environmental variables
+    CEREBRO_PATH = os.path.join(os.environ["CEREBRO_HOME"], "cerebro")
+else:
+    #Get project path from relative path
+    CEREBRO_PATH = os.path.normpath(os.path.abspath(__file__) + "../../../..")
+
+
+def setup_package():
+    """Set up the environment for the whole test package.
+
+    Put here all the configuration that needs to be run only once.
+    """
+
+    #Start test engine
+    global test_engine
+
+    test_engine = engine_from_config(clay.config.get('testing.database'))
+
+    #Import fixtures
+    if clay.config.get('testing.fixture_filepath'):
+
+        #Get fixture filepath
+        if str(CEREBRO_PATH) not in str(clay.config.get('testing.fixture_filepath')):
+            fixtures_filepath = os.path.join(CEREBRO_PATH, clay.config.get('testing.fixture_filepath'))
+        else:
+            fixtures_filepath = clay.config.get('testing.fixture_filepath')
+
+        #Load fixtures
+        charlatan.load(fixtures_filepath,
+                models_package="cerebro.model",
+                db_session=db_session)  # db_session is a sqlalchemy Session object, for saving fixtures
+
+    #Initialize SQLalchemy mappers with test engine
+    initialize_sql(test_engine)
+
+def teardown_package():
+    pass
+
+--------------------------------------------------------------------------------
+
+Each test will open its own connection and transaction with the database, and as part of the teardown the entire transaction will be rolled back, effectively giving each test its own copy of the database to interact with. Continuing to add to our base CerebroTestCase class, we add this logic in the `_pre_setup` and `post_teardown` methods:
+
+.Test Database Test
+[source, python]
+--------------------------------------------------------------------------------
+class CerebroTestCase(unittest.TestCase, charlatan.FixturesManagerMixin):
+
+    def __call__(self):
+
+        #Do pre-test stuff
+
+        self.config_copy = clay.config.CONFIG.config.copy()
+
+        self._pre_setup()
+
+        #Patch config dictionary so tests can customize
+        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
+            unittest.TestCase.__call__(self, result)
+
+        #Do post-test stuff
+        self._post_teardown()
+
+    def _pre_setup(self):
+        from cerebro.tests import test_engine as engine
+
+        # Start a new connection
+        self.connection = engine.connect()
+
+        # Begin a non-ORM transaction
+        self.trans = self.connection.begin()
+        # Bind the session to the connection
+        db_session.configure(bind=self.connection)
+
+        self.clean_fixtures_cache()
+
+        if hasattr(self, 'test_config'):
+            #Support ability for tests to have their own test settings
+            for attr, value in self.test_config.items():
+                self.set_config(attr, value)
+
+        #install class fixtures
+        if hasattr(self, 'fixtures'):
+            self.install_fixtures(self.fixtures)
+
+
+    def _post_teardown(self):
+        # Teardown the transaction
+        if hasattr(self, "connection"):
+            # Rollback database
+            self.trans.rollback()
+            db_session.remove()
+            # We have to explicitely close the connection
+            self.connection.close()
+            del self.connection
+
+        self.clean_fixtures_cache()
+
+
+    def set_config(self, key, value):
+        """Helper function that tests can call to set config values."""
+
+        val = self.config_copy
+        keys = key.split('.')
+
+        for k in keys[:-1]:
+            val = val[k]
+
+        val[keys[-1]] = value
+--------------------------------------------------------------------------------
+
+Important Note: This pattern can not be used for any methods with explicitly roll back a sqlalchemy session, as it will cascade downward and rollback the test's transaction.
