@@ -335,6 +335,7 @@ http://uber.github.com/charlatan/[Charlatan] is another open sourced library fro
 The following patterns provide a way to integrate the charlatan fixture model into a unittesting framework.
 
 First add a filepath to your fixtures to your configuration file:
+
 .Fixture configuration
 [source,javascript]
 --------------------------------------------------------------------------------
@@ -474,7 +475,7 @@ class TestToast(CerebroTestCase):
 
 === Testing with Clay: Providing a clean test database for each test
 
-When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy's http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session[`scoped_session`] to accopmlish this goal.
+When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy's http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session[`scoped_session`] to accomplish this goal.
 
 First, add a sqlalchemy configuration for your test database to clay's configuration file:
 
