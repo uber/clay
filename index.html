@@ -997,12 +997,448 @@ response <span style="color: #990000">=</span> http<span style="color: #990000">
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_useful_patterns">Useful Patterns</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_testing_with_clay_letting_tests_change_clay_8217_s_configuration">Testing with Clay: Letting tests change clay&#8217;s configuration</h3>
+<div class="paragraph"><p>Sometimes when unittesting, it may make sense to test various configuration settings. Using
+a base unittest like so:</p></div>
+<div class="listingblock">
+<div class="title">Base Unittest</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">CerebroTestCase</span></span><span style="color: #990000">(</span>unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">):</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do pre-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">()</span>
+
+        unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> result<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do post-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">()</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+</tt></pre></div></div>
+<div class="paragraph"><p>Since clay&#8217;s configuration is stored as a dictionary, the trick is to use mock&#8217;s
+<a href="http://www.voidspace.org.uk/python/mock/patch.html#patch-dict">patch dictionary</a>
+to replace the read-only dictionary with a malleable one:</p></div>
+<div class="listingblock">
+<div class="title">Patched Unittest</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">CerebroTestCase</span></span><span style="color: #990000">(</span>unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">):</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-style: italic"><span style="color: #9A1900">#Copy configuration dictionary</span></span>
+        self<span style="color: #990000">.</span>config_copy <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">copy</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do pre-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Patch config dictionary so tests can customize</span></span>
+        with mock<span style="color: #990000">.</span>patch<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">dict</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">,</span> self<span style="color: #990000">.</span>config_copy<span style="color: #990000">,</span> clear<span style="color: #990000">=</span>True<span style="color: #990000">):</span>
+            unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> result<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do post-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">()</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+</tt></pre></div></div>
+<div class="paragraph"><p>Finally, you can specify an attribute on a test with a dictionary of clay.config keys
+and values to be applied to each test (in the example below, it&#8217;s <code>test_config</code>), as
+well as a utility function so that the configuration can be manipulated for a single test:</p></div>
+<div class="listingblock">
+<div class="title">Customizable Unittest</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">CerebroTestCase</span></span><span style="color: #990000">(</span>unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">):</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do pre-test stuff</span></span>
+
+        self<span style="color: #990000">.</span>config_copy <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">copy</span></span><span style="color: #990000">()</span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Patch config dictionary so tests can customize</span></span>
+        with mock<span style="color: #990000">.</span>patch<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">dict</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">,</span> self<span style="color: #990000">.</span>config_copy<span style="color: #990000">,</span> clear<span style="color: #990000">=</span>True<span style="color: #990000">):</span>
+            unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> result<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do post-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">()</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">'test_config'</span><span style="color: #990000">):</span>
+            <span style="font-style: italic"><span style="color: #9A1900">#Support ability for tests to have their own test settings</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> attr<span style="color: #990000">,</span> value <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> self<span style="color: #990000">.</span>test_config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">items</span></span><span style="color: #990000">():</span>
+                self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>attr<span style="color: #990000">,</span> value<span style="color: #990000">)</span>
+
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> key<span style="color: #990000">,</span> value<span style="color: #990000">):</span>
+<span style="font-style: italic"><span style="color: #9A1900">        """Helper function that tests can call to set config values."""</span></span>
+
+        val <span style="color: #990000">=</span> self<span style="color: #990000">.</span>config_copy
+        keys <span style="color: #990000">=</span> key<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">split</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'.'</span><span style="color: #990000">)</span>
+
+        <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> k <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> keys<span style="color: #990000">[:-</span><span style="color: #993399">1</span><span style="color: #990000">]:</span>
+            val <span style="color: #990000">=</span> val<span style="color: #990000">[</span>k<span style="color: #990000">]</span>
+
+        val<span style="color: #990000">[</span>keys<span style="color: #990000">[-</span><span style="color: #993399">1</span><span style="color: #990000">]]</span> <span style="color: #990000">=</span> value
+</tt></pre></div></div>
+<div class="paragraph"><p>An example test using the above patterns:</p></div>
+<div class="listingblock">
+<div class="title">Customizable Unittest</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">TestToast</span></span><span style="color: #990000">(</span>CerebroTestCase<span style="color: #990000">):</span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#These values will apply to all tests in this class</span></span>
+    test_config <span style="color: #990000">=</span> <span style="color: #990000">{</span>
+        <span style="color: #FF0000">'toast.one_sided'</span><span style="color: #990000">:</span> False<span style="color: #990000">,</span>
+        <span style="color: #FF0000">'toast.two_sided'</span><span style="color: #990000">:</span> True
+    <span style="color: #990000">}</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">setUp</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">tearDown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">test_burnt_toast</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-style: italic"><span style="color: #9A1900">#These values will apply for only this test</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'toast.one_sided'</span><span style="color: #990000">,</span> True<span style="color: #990000">)</span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'toast.two_sided'</span><span style="color: #990000">,</span> False<span style="color: #990000">)</span>
+
+        self<span style="color: #990000">.</span>toast <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000000">Toast</span></span><span style="color: #990000">()</span>
+        <span style="font-style: italic"><span style="color: #9A1900">#...test continues...</span></span></tt></pre></div></div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_clay_using_charlatan_to_manage_fixtures">Testing with Clay: Using Charlatan to manage fixtures</h3>
+<div class="paragraph"><p><a href="http://uber.github.com/charlatan/">Charlatan</a> is another open sourced library from Uber for managing fixtures.
+The following patterns provide a way to integrate the charlatan fixture model into a unittesting framework.</p></div>
+<div class="paragraph"><p>First add a filepath to your fixtures to your configuration file:
+.Fixture configuration</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #FF0000">{</span>
+    <span style="color: #FF0000">"testing"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"fixture_filepath"</span><span style="color: #990000">:</span>  <span style="color: #FF0000">"cerebro/tests/fixtures.yaml"</span>
+    <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Charlatan only needs to load the fixtures once, so it makes sense to do it when the package is setup.
+Adding this to the setup_package() method in the project&#8217;s test/<em>init</em>.py accomplishes this when using nosetests.
+The following is an example from Uber&#8217;s Cerebro project:</p></div>
+<div class="listingblock">
+<div class="title"><code>test/__init__.py</code></div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">from</span></span> __future__ <span style="font-weight: bold"><span style="color: #000080">import</span></span> absolute_import
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> charlatan
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> os
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> clay
+
+<span style="font-style: italic"><span style="color: #9A1900">#Get project path</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">if</span></span> os<span style="color: #990000">.</span>environ<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"CEREBRO_HOME"</span><span style="color: #990000">):</span>
+    <span style="font-style: italic"><span style="color: #9A1900">#Get absolute project path from environmental variables</span></span>
+    CEREBRO_PATH <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">join</span></span><span style="color: #990000">(</span>os<span style="color: #990000">.</span>environ<span style="color: #990000">[</span><span style="color: #FF0000">"CEREBRO_HOME"</span><span style="color: #990000">],</span> <span style="color: #FF0000">"cerebro"</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">else</span></span><span style="color: #990000">:</span>
+    <span style="font-style: italic"><span style="color: #9A1900">#Get project path from relative path</span></span>
+    CEREBRO_PATH <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">normpath</span></span><span style="color: #990000">(</span>os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">abspath</span></span><span style="color: #990000">(</span>__file__<span style="color: #990000">)</span> <span style="color: #990000">+</span> <span style="color: #FF0000">"../../../.."</span><span style="color: #990000">)</span>
+
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">setup_package</span></span><span style="color: #990000">():</span>
+<span style="font-style: italic"><span style="color: #9A1900">    """Set up the environment for the whole test package.</span></span>
+
+<span style="font-style: italic"><span style="color: #9A1900">    Put here all the configuration that needs to be run only once.</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    """</span></span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#Import fixtures</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Get fixture filepath</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">str</span></span><span style="color: #990000">(</span>CEREBRO_PATH<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">not</span></span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> <span style="font-weight: bold"><span style="color: #000000">str</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">)):</span>
+            fixtures_filepath <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">join</span></span><span style="color: #990000">(</span>CEREBRO_PATH<span style="color: #990000">,</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">))</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">else</span></span><span style="color: #990000">:</span>
+            fixtures_filepath <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Load fixtures</span></span>
+        charlatan<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">load</span></span><span style="color: #990000">(</span>fixtures_filepath<span style="color: #990000">,</span>
+                models_package<span style="color: #990000">=</span><span style="color: #FF0000">"cerebro.model"</span><span style="color: #990000">,</span>
+                db_session<span style="color: #990000">=</span>db_session<span style="color: #990000">)</span>  <span style="font-style: italic"><span style="color: #9A1900"># db_session is a sqlalchemy Session object, for saving fixtures</span></span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">teardown_package</span></span><span style="color: #990000">():</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span></tt></pre></div></div>
+<div class="paragraph"><p>Once the fixtures have been loaded, add charlatan&#8217;s FixturesManagerMixin to your testcase to allow each test to access and manipulate fixtures. Generally, it saves time if each test can optionally specify a list of fixtures to be installed before each test; adding a few lines to <code>_pre_setup</code> takes care of the installation.</p></div>
+<div class="listingblock">
+<div class="title">Fixture Test</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">CerebroTestCase</span></span><span style="color: #990000">(</span>unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">,</span> charlatan<span style="color: #990000">.</span>FixturesManagerMixin<span style="color: #990000">):</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do pre-test stuff</span></span>
+
+        self<span style="color: #990000">.</span>config_copy <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">copy</span></span><span style="color: #990000">()</span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Patch config dictionary so tests can customize</span></span>
+        with mock<span style="color: #990000">.</span>patch<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">dict</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">,</span> self<span style="color: #990000">.</span>config_copy<span style="color: #990000">,</span> clear<span style="color: #990000">=</span>True<span style="color: #990000">):</span>
+            unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> result<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do post-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">()</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">clean_fixtures_cache</span></span><span style="color: #990000">()</span>
+
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">'test_config'</span><span style="color: #990000">):</span>
+            <span style="font-style: italic"><span style="color: #9A1900">#Support ability for tests to have their own test settings</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> attr<span style="color: #990000">,</span> value <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> self<span style="color: #990000">.</span>test_config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">items</span></span><span style="color: #990000">():</span>
+                self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>attr<span style="color: #990000">,</span> value<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#install class fixtures</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">'fixtures'</span><span style="color: #990000">):</span>
+            self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">install_fixtures</span></span><span style="color: #990000">(</span>self<span style="color: #990000">.</span>fixtures<span style="color: #990000">)</span>
+
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">clean_fixtures_cache</span></span><span style="color: #990000">()</span>
+
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> key<span style="color: #990000">,</span> value<span style="color: #990000">):</span>
+<span style="font-style: italic"><span style="color: #9A1900">        """Helper function that tests can call to set config values."""</span></span>
+
+        val <span style="color: #990000">=</span> self<span style="color: #990000">.</span>config_copy
+        keys <span style="color: #990000">=</span> key<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">split</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'.'</span><span style="color: #990000">)</span>
+
+        <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> k <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> keys<span style="color: #990000">[:-</span><span style="color: #993399">1</span><span style="color: #990000">]:</span>
+            val <span style="color: #990000">=</span> val<span style="color: #990000">[</span>k<span style="color: #990000">]</span>
+
+        val<span style="color: #990000">[</span>keys<span style="color: #990000">[-</span><span style="color: #993399">1</span><span style="color: #990000">]]</span> <span style="color: #990000">=</span> value</tt></pre></div></div>
+<div class="paragraph"><p>Additionally, the full charlatan functionality is available in each unit test:</p></div>
+<div class="listingblock">
+<div class="title">Fixture Unittest</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">TestToast</span></span><span style="color: #990000">(</span>CerebroTestCase<span style="color: #990000">):</span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#These fixtures will be installed with all tests</span></span>
+    fixtures <span style="color: #990000">=</span> <span style="color: #990000">(</span><span style="color: #FF0000">'toast'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'burnt_toast'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'bread'</span><span style="color: #990000">)</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">setUp</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">tearDown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">test_toastiness</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        is_burnt <span style="color: #990000">=</span> self<span style="color: #990000">.</span>toast<span style="color: #990000">.</span>burnt  <span style="font-style: italic"><span style="color: #9A1900"># installed fixtures can be accessed</span></span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">install_fixture</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'wheat_bread'</span><span style="color: #990000">)</span>  <span style="font-style: italic"><span style="color: #9A1900"># installs wheat_bread fixture for just this test.</span></span>
+
+        toaster <span style="color: #990000">=</span> self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get_fixture</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'toaster'</span><span style="color: #990000">)</span>  <span style="font-style: italic"><span style="color: #9A1900"># can get fixtures manipulate them</span></span>
+
+        toaster<span style="color: #990000">.</span>num_slots <span style="color: #990000">=</span> <span style="color: #993399">4</span>
+        toaster<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">save</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#...test continues</span></span>
+</tt></pre></div></div>
+</div>
+<div class="sect2">
+<h3 id="_testing_with_clay_providing_a_clean_test_database_for_each_test">Testing with Clay: Providing a clean test database for each test</h3>
+<div class="paragraph"><p>When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy&#8217;s <a href="http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session"><code>scoped_session</code></a> to accopmlish this goal.</p></div>
+<div class="paragraph"><p>First, add a sqlalchemy configuration for your test database to clay&#8217;s configuration file:</p></div>
+<div class="listingblock">
+<div class="title">Test database configuration</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #FF0000">{</span>
+    <span style="color: #FF0000">"testing"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"fixture_filepath"</span><span style="color: #990000">:</span>  <span style="color: #FF0000">"cerebro/tests/fixtures.yaml"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"database"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+            <span style="color: #FF0000">"sqlalchemy.url"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"postgresql://user:password@localhost:1234/test_database"</span><span style="color: #990000">,</span>
+            <span style="color: #FF0000">"echo"</span><span style="color: #990000">:</span> True
+        <span style="color: #FF0000">}</span>
+    <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Then, have the engine start when the test package is started by adding to the setup_package() function started here. The following is an example from Uber&#8217;s Cerebro project:</p></div>
+<div class="listingblock">
+<div class="title"><code>test/__init__.py</code> with Test Database Engine</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">from</span></span> __future__ <span style="font-weight: bold"><span style="color: #000080">import</span></span> absolute_import
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> charlatan
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> os
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> clay
+
+<span style="font-weight: bold"><span style="color: #000080">from</span></span> sqlalchemy <span style="font-weight: bold"><span style="color: #000080">import</span></span> engine_from_config
+
+<span style="font-style: italic"><span style="color: #9A1900">#db_session is a sqlalchemy scoped_session object</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">#initialize_sql is a function to import Cerebro's models and initialize the sqlalchemy mappers</span></span>
+<span style="font-weight: bold"><span style="color: #000080">from</span></span> cerebro<span style="color: #990000">.</span>model<span style="color: #990000">.</span>basics <span style="font-weight: bold"><span style="color: #000080">import</span></span> db_session<span style="color: #990000">,</span> initialize_sql
+
+
+test_engine <span style="color: #990000">=</span> None
+
+<span style="font-style: italic"><span style="color: #9A1900">#Get project path</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">if</span></span> os<span style="color: #990000">.</span>environ<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"CEREBRO_HOME"</span><span style="color: #990000">):</span>
+    <span style="font-style: italic"><span style="color: #9A1900">#Get absolute project path from environmental variables</span></span>
+    CEREBRO_PATH <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">join</span></span><span style="color: #990000">(</span>os<span style="color: #990000">.</span>environ<span style="color: #990000">[</span><span style="color: #FF0000">"CEREBRO_HOME"</span><span style="color: #990000">],</span> <span style="color: #FF0000">"cerebro"</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">else</span></span><span style="color: #990000">:</span>
+    <span style="font-style: italic"><span style="color: #9A1900">#Get project path from relative path</span></span>
+    CEREBRO_PATH <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">normpath</span></span><span style="color: #990000">(</span>os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">abspath</span></span><span style="color: #990000">(</span>__file__<span style="color: #990000">)</span> <span style="color: #990000">+</span> <span style="color: #FF0000">"../../../.."</span><span style="color: #990000">)</span>
+
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">setup_package</span></span><span style="color: #990000">():</span>
+<span style="font-style: italic"><span style="color: #9A1900">    """Set up the environment for the whole test package.</span></span>
+
+<span style="font-style: italic"><span style="color: #9A1900">    Put here all the configuration that needs to be run only once.</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    """</span></span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#Start test engine</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">global</span></span> test_engine
+
+    test_engine <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000000">engine_from_config</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.database'</span><span style="color: #990000">))</span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#Import fixtures</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Get fixture filepath</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">str</span></span><span style="color: #990000">(</span>CEREBRO_PATH<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">not</span></span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> <span style="font-weight: bold"><span style="color: #000000">str</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">)):</span>
+            fixtures_filepath <span style="color: #990000">=</span> os<span style="color: #990000">.</span>path<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">join</span></span><span style="color: #990000">(</span>CEREBRO_PATH<span style="color: #990000">,</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">))</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">else</span></span><span style="color: #990000">:</span>
+            fixtures_filepath <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">get</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'testing.fixture_filepath'</span><span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Load fixtures</span></span>
+        charlatan<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">load</span></span><span style="color: #990000">(</span>fixtures_filepath<span style="color: #990000">,</span>
+                models_package<span style="color: #990000">=</span><span style="color: #FF0000">"cerebro.model"</span><span style="color: #990000">,</span>
+                db_session<span style="color: #990000">=</span>db_session<span style="color: #990000">)</span>  <span style="font-style: italic"><span style="color: #9A1900"># db_session is a sqlalchemy Session object, for saving fixtures</span></span>
+
+    <span style="font-style: italic"><span style="color: #9A1900">#Initialize SQLalchemy mappers with test engine</span></span>
+    <span style="font-weight: bold"><span style="color: #000000">initialize_sql</span></span><span style="color: #990000">(</span>test_engine<span style="color: #990000">)</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">teardown_package</span></span><span style="color: #990000">():</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+</tt></pre></div></div>
+<div class="paragraph"><p>Each test will open its own connection and transaction with the database, and as part of the teardown the entire transaction will be rolled back, effectively giving each test its own copy of the database to interact with. Continuing to add to our base CerebroTestCase class, we add this logic in the <code>_pre_setup</code> and <code>post_teardown</code> methods:</p></div>
+<div class="listingblock">
+<div class="title">Test Database Test</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">CerebroTestCase</span></span><span style="color: #990000">(</span>unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">,</span> charlatan<span style="color: #990000">.</span>FixturesManagerMixin<span style="color: #990000">):</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do pre-test stuff</span></span>
+
+        self<span style="color: #990000">.</span>config_copy <span style="color: #990000">=</span> clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">copy</span></span><span style="color: #990000">()</span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Patch config dictionary so tests can customize</span></span>
+        with mock<span style="color: #990000">.</span>patch<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">dict</span></span><span style="color: #990000">(</span>clay<span style="color: #990000">.</span>config<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>config<span style="color: #990000">,</span> self<span style="color: #990000">.</span>config_copy<span style="color: #990000">,</span> clear<span style="color: #990000">=</span>True<span style="color: #990000">):</span>
+            unittest<span style="color: #990000">.</span>TestCase<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">__call__</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> result<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#Do post-test stuff</span></span>
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">()</span>
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_pre_setup</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-weight: bold"><span style="color: #000080">from</span></span> cerebro<span style="color: #990000">.</span>tests <span style="font-weight: bold"><span style="color: #000080">import</span></span> test_engine as engine
+
+        <span style="font-style: italic"><span style="color: #9A1900"># Start a new connection</span></span>
+        self<span style="color: #990000">.</span>connection <span style="color: #990000">=</span> engine<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">connect</span></span><span style="color: #990000">()</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900"># Begin a non-ORM transaction</span></span>
+        self<span style="color: #990000">.</span>trans <span style="color: #990000">=</span> self<span style="color: #990000">.</span>connection<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">begin</span></span><span style="color: #990000">()</span>
+        <span style="font-style: italic"><span style="color: #9A1900"># Bind the session to the connection</span></span>
+        db_session<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">configure</span></span><span style="color: #990000">(</span>bind<span style="color: #990000">=</span>self<span style="color: #990000">.</span>connection<span style="color: #990000">)</span>
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">clean_fixtures_cache</span></span><span style="color: #990000">()</span>
+
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">'test_config'</span><span style="color: #990000">):</span>
+            <span style="font-style: italic"><span style="color: #9A1900">#Support ability for tests to have their own test settings</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> attr<span style="color: #990000">,</span> value <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> self<span style="color: #990000">.</span>test_config<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">items</span></span><span style="color: #990000">():</span>
+                self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>attr<span style="color: #990000">,</span> value<span style="color: #990000">)</span>
+
+        <span style="font-style: italic"><span style="color: #9A1900">#install class fixtures</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">'fixtures'</span><span style="color: #990000">):</span>
+            self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">install_fixtures</span></span><span style="color: #990000">(</span>self<span style="color: #990000">.</span>fixtures<span style="color: #990000">)</span>
+
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">_post_teardown</span></span><span style="color: #990000">(</span>self<span style="color: #990000">):</span>
+        <span style="font-style: italic"><span style="color: #9A1900"># Teardown the transaction</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000000">hasattr</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> <span style="color: #FF0000">"connection"</span><span style="color: #990000">):</span>
+            <span style="font-style: italic"><span style="color: #9A1900"># Rollback database</span></span>
+            self<span style="color: #990000">.</span>trans<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">rollback</span></span><span style="color: #990000">()</span>
+            db_session<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">remove</span></span><span style="color: #990000">()</span>
+            <span style="font-style: italic"><span style="color: #9A1900"># We have to explicitely close the connection</span></span>
+            self<span style="color: #990000">.</span>connection<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">close</span></span><span style="color: #990000">()</span>
+            <span style="font-weight: bold"><span style="color: #0000FF">del</span></span> self<span style="color: #990000">.</span>connection
+
+        self<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">clean_fixtures_cache</span></span><span style="color: #990000">()</span>
+
+
+    <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">set_config</span></span><span style="color: #990000">(</span>self<span style="color: #990000">,</span> key<span style="color: #990000">,</span> value<span style="color: #990000">):</span>
+<span style="font-style: italic"><span style="color: #9A1900">        """Helper function that tests can call to set config values."""</span></span>
+
+        val <span style="color: #990000">=</span> self<span style="color: #990000">.</span>config_copy
+        keys <span style="color: #990000">=</span> key<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">split</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'.'</span><span style="color: #990000">)</span>
+
+        <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> k <span style="font-weight: bold"><span style="color: #0000FF">in</span></span> keys<span style="color: #990000">[:-</span><span style="color: #993399">1</span><span style="color: #990000">]:</span>
+            val <span style="color: #990000">=</span> val<span style="color: #990000">[</span>k<span style="color: #990000">]</span>
+
+        val<span style="color: #990000">[</span>keys<span style="color: #990000">[-</span><span style="color: #993399">1</span><span style="color: #990000">]]</span> <span style="color: #990000">=</span> value</tt></pre></div></div>
+<div class="paragraph"><p>Important Note: This pattern can not be used for any methods with explicitly roll back a sqlalchemy session, as it will cascade downward and rollback the test&#8217;s transaction.</p></div>
+</div>
+</div>
+</div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
 Version 1.1<br />
-Last updated 2013-02-13 20:58:22 UTC
+Last updated 2013-02-15 01:23:40 UTC
 </div>
 </div>
 </body>
