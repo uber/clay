@@ -35,7 +35,7 @@ def request(method, uri, headers={}, data=None):
 	'''
 	Convenience wrapper around urllib2
 	'''
-	if not url.startswith("http"):
+	if not uri.startswith("http"):
 		raise InputError("Invalid url")
 	req = Request(uri, headers=headers, data=data, method=method)
 	try:
