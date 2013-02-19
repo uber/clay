@@ -35,6 +35,8 @@ def request(method, uri, headers={}, data=None):
 	'''
 	Convenience wrapper around urllib2
 	'''
+	if not url.startswith("http"):
+		raise InputError("Invalid url")
 	req = Request(uri, headers=headers, data=data, method=method)
 	try:
 		resp = urllib2.urlopen(req)
