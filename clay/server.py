@@ -33,7 +33,7 @@ if not flask_init:
 app = Flask(**flask_init)
 app.debug = config.debug()
 app.config.update(config.get('flask.config', {}))
-app.secret_key = '\xdfg\xc6}\xa8\xfb\xc8\x88\xe0\x91\xca\x04\xf6\x1d\x0by\xf1e27\x85\x91\xbe\xb9'
+app.secret_key = config.get('flask.secret_key', '')
 application = app
 for name, mwconfig in config.get('middleware', {}).iteritems():
     application = load_middleware(application, name, mwconfig)
