@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import logging
 
 import raven.utils.wsgi
 import raven
@@ -8,6 +7,7 @@ from clay import config
 
 log = config.get_logger('clay.sentry')
 client = None
+
 
 def get_sentry_client():
     global client
@@ -23,7 +23,7 @@ def get_sentry_client():
 def exception(exc_info, request=None, event_id=None, **extra):
     try:
         _exception(exc_info, request=request, event_id=event_id, **extra)
-    except Exception, e:
+    except:
         log.exception('Unable to send event to sentry')
 
 
@@ -43,7 +43,7 @@ def _exception(exc_info, request=None, event_id=None, **extra):
                 'headers': dict(raven.utils.wsgi.get_headers(environ)),
                 'env': dict(raven.utils.wsgi.get_environ(environ)),
             },
-            'logger': 'matching',
+            'logger': extra.get("logger", "sentry"),
         }, extra=extra, exc_info=exc_info, event_id=event_id)
     else:
         client.captureException(exc_info, extra=extra,
