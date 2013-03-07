@@ -36,6 +36,9 @@ def request(method, uri, headers={}, data=None):
 	Convenience wrapper around urllib2
 	'''
 	req = Request(uri, headers=headers, data=data, method=method)
+	if not req.get_type() in ('http', 'https'):
+		raise urllib2.URLError('Only http and https protocols are supported')
+
 	try:
 		resp = urllib2.urlopen(req)
 		resp = Response(
