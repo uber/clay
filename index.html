@@ -940,8 +940,10 @@ http://www.gnu.org/software/src-highlite -->
 <div class="sect2">
 <h3 id="_clay_mail">clay.mail</h3>
 <div class="sect3">
-<h4 id="_clay_mail_sendmail_mailto_subject_message">clay.mail.sendmail(mailto, subject, message)</h4>
+<h4 id="_clay_mail_sendmail_mailto_subject_message_subtype_em_html_em_charset_em_utf_8_em_headers">clay.mail.sendmail(mailto, subject, message, subtype=<em>html</em>, charset=<em>utf-8</em>, **headers)</h4>
 <div class="paragraph"><p>Sends an email to the given address using the server/credentials specified in the config under <code>smtp</code>.</p></div>
+<div class="paragraph"><p>Additional SMTP headers may be set as keyword arguments, the values of which are expected to be either a subclass of basestring or an iterable of basestrings.</p></div>
+<div class="paragraph"><p>By default the From address is populated by the <code>smtp.from</code> config option. This may be overridden by passing a <code>From</code> kwarg.</p></div>
 <div class="listingblock">
 <div class="title">Mail configuration</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -954,6 +956,7 @@ http://www.gnu.org/software/src-highlite -->
                 <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">25</span><span style="color: #990000">,</span>
                 <span style="color: #FF0000">"username"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"myname"</span><span style="color: #990000">,</span>
                 <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"superseekrit"</span>
+                <span style="color: #FF0000">"from"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"test@example.com"</span>
         <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
@@ -964,10 +967,15 @@ http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #000080">from</span></span> clay <span style="font-weight: bold"><span style="color: #000080">import</span></span> mail
 
-mail<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">sendmail</span></span><span style="color: #990000">(</span>
-        mailto<span style="color: #990000">=</span><span style="color: #FF0000">'example@uber.com'</span><span style="color: #990000">,</span>
-        subject<span style="color: #990000">=</span><span style="color: #FF0000">'Not spam I promise!'</span><span style="color: #990000">,</span>
-        message<span style="color: #990000">=</span><span style="color: #FF0000">'This is just an example of an email'</span><span style="color: #990000">)</span></tt></pre></div></div>
+<span style="font-style: italic"><span style="color: #9A1900"># Simple example</span></span>
+mail<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">sendmail</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'user@example.com'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'Not spam I promise!'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'A simple example'</span><span style="color: #990000">)</span>
+
+<span style="font-style: italic"><span style="color: #9A1900"># Complex example</span></span>
+mail<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">sendmail</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'user@example.com'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'Definitely not spam'</span><span style="color: #990000">,</span> CC<span style="color: #990000">=[</span>
+  <span style="color: #FF0000">'otheruser@example.com'</span><span style="color: #990000">,</span>
+<span style="font-style: italic"><span style="color: #9A1900">  'somedude@otherexample.com'</span></span>
+<span style="color: #990000">],</span> BCC<span style="color: #990000">=</span><span style="color: #FF0000">'outbound@example.com'</span><span style="color: #990000">,</span> From<span style="color: #990000">=</span><span style="color: #FF0000">'noreply@example.com'</span><span style="color: #990000">,</span> subtype<span style="color: #990000">=</span><span style="color: #FF0000">'html'</span><span style="color: #990000">,</span>
+  message<span style="color: #990000">=</span><span style="color: #FF0000">'&lt;marquee&gt;&lt;blink&gt;YOU OBVIOUSLY LOVE OWLS&lt;/blink&gt;&lt;/marquee&gt;'</span><span style="color: #990000">)</span></tt></pre></div></div>
 </div>
 </div>
 <div class="sect2">
@@ -1438,7 +1446,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version 1.1<br />
-Last updated 2013-02-15 01:23:40 UTC
+Last updated 2013-03-07 21:08:02 UTC
 </div>
 </div>
 </body>
