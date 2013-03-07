@@ -41,7 +41,7 @@ for name, mwconfig in config.get('middleware', {}).iteritems():
 
 def devserver():
     if not config.debug():
-        sys.stderr.write('This server must be run in development mode, set CLAY_ENVIRONENT=development and try again\n')
+        sys.stderr.write('This server must be run in development mode, set CLAY_ENVIRONMENT=development and try again\n')
         return -1
 
     for modulename in config.get('views'):
