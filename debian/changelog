@@ -1,3 +1,10 @@
+clay (1.2) unstable; urgency=low
+
+  * Mail module now supports more complex messaging
+  * HTTP module disallows file:/// and ftp:// URLs
+
+ -- Jeremy Grosser <jeremy@uber.com>  Thu,  7 Mar 2013 23:34:32 +0000
+
 clay (1.1) unstable; urgency=low
 
   * Bugfixes and YAML support

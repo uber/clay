@@ -1,3 +1,5 @@
+__version__ = '1.2'
+
 from __future__ import absolute_import
 from clay.server import app
 from clay import config, stats
