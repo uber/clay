@@ -143,8 +143,12 @@ This method will cause the configuration to be reloaded from it's source on dema
 
 === clay.mail
 
-==== clay.mail.sendmail(mailto, subject, message)
+==== clay.mail.sendmail(mailto, subject, message, subtype='html', charset='utf-8', **headers)
 Sends an email to the given address using the server/credentials specified in the config under `smtp`.
+
+Additional SMTP headers may be set as keyword arguments, the values of which are expected to be either a subclass of basestring or an iterable of basestrings.
+
+By default the From address is populated by the `smtp.from` config option. This may be overridden by passing a `From` kwarg.
 
 .Mail configuration
 [source,javascript]
@@ -155,7 +159,8 @@ Sends an email to the given address using the server/credentials specified in th
 		"port": 25,
 		"username": "myname",
 		"password": "superseekrit"
-	}
+                "from": "test@example.com"
+        }
 }
 --------------------------------------------------------------------------------
 
@@ -164,10 +169,15 @@ Sends an email to the given address using the server/credentials specified in th
 --------------------------------------------------------------------------------
 from clay import mail
 
-mail.sendmail(
-	mailto='example@uber.com',
-	subject='Not spam I promise!',
-	message='This is just an example of an email')
+# Simple example
+mail.sendmail('user@example.com', 'Not spam I promise!', 'A simple example')
+
+# Complex example
+mail.sendmail('user@example.com', 'Definitely not spam', CC=[
+  'otheruser@example.com',
+  'somedude@otherexample.com'
+], BCC='outbound@example.com', From='noreply@example.com', subtype='html',
+  message='<marquee><blink>YOU OBVIOUSLY LOVE OWLS</blink></marquee>')
 --------------------------------------------------------------------------------
 
 === clay.http
