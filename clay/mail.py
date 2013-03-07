@@ -33,8 +33,6 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **header
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     for key, value in headers.iteritems():
-        if key.lower() == 'bcc':
-            continue
         for val in _string_or_list(value):
             msg.add_header(key, val)
 
@@ -51,6 +49,8 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **header
     recipients = []
     for toheader in ('To', 'CC', 'BCC'):
         recipients += msg.get_all(toheader, [])
+    if 'BCC' in msg:
+        del msg['BCC']
 
     smtp = smtplib.SMTP(config.get('smtp.host'), config.get('smtp.port'))
     smtp.login(config.get('smtp.username'), config.get('smtp.password'))
