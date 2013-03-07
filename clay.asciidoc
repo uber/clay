@@ -179,11 +179,6 @@ is just a wrapper around urllib2 so any installed openers or redirect
 handlers will be used. See the urllib2 docs for more information
 (http://docs.python.org/2/library/urllib2.html).
 
-*WARNING*: urllib2 supports opening `file://` URLs by default, meaning
-that the local filesystem is accessible via this interface. If you're
-handling URLs that can be manipulated by a client, make sure to check
-that you're not creating a security hole.
-
 [source,python]
 --------------------------------------------------------------------------------
 from clay import http
