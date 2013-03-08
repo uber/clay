@@ -114,7 +114,7 @@ class Configuration(object):
         self.debug() return True
         '''
 
-        fmt = logging.Formatter('%(name)s %(levelname)s %(message)s')
+        fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
         stderr = logging.StreamHandler()
         stderr.setFormatter(fmt)
         root = logging.getLogger()
