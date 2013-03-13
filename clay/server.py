@@ -47,7 +47,7 @@ def devserver():
     for modulename in config.get('views'):
         log.debug('Loading views from %s' % modulename)
         module = __import__(modulename)
-    
+
     conf = config.get('debug.server')
     log.warning('DEVELOPMENT MODE')
     log.info('Listening on %s:%i' % (conf['host'], conf['port']))
