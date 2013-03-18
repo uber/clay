@@ -170,12 +170,10 @@ class Configuration(object):
         feature = self.get('features.%s' % name)
         if not feature:
             return False
-        if not 'enabled' in feature:
-            return False
         if 'percent' in feature:
             percent = float(feature['percent']) / 100.0
             return (random.random() < percent)
-        return True
+        return feature.get('enabled', False)
 
 
 CONFIG = Configuration()
