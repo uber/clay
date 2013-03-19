@@ -35,7 +35,7 @@ class Configuration(object):
         '''
         Returns True if this server should use debug configuration and logging
         '''
-        if os.environ.get('CLAY_ENVIRONMENT', None) == 'development':
+        if os.environ.get('CLAY_ENVIRONMENT', None) in ['development', 'local']:
             return True
         else:
             return False
