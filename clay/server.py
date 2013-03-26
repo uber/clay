@@ -52,9 +52,15 @@ def devserver():
     log.warning('DEVELOPMENT MODE')
     log.info('Listening on %s:%i' % (conf['host'], conf['port']))
 
-    werkzeug.serving.run_simple(conf['host'], conf['port'], application,
-        use_reloader=True, use_debugger=True, use_evalex=True, threaded=False,
-        processes=1)
+    kwargs = {
+        'use_reloader': True,
+        'use_debugger': True,
+        'use_evalex': True,
+        'threaded': False,
+        'processes': 1,
+    }
+    kwargs.update(config.get('debug.werkzeug', {}))
+    werkzeug.serving.run_simple(conf['host'], conf['port'], application, **kwargs)
 
 
 if __name__ == '__main__':
