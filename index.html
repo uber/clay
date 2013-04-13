@@ -734,8 +734,8 @@ asciidoc.install(2);
 <h1>Clay Framework</h1>
 <span id="author">Jeremy Grosser</span><br />
 <span id="email"><code>&lt;<a href="mailto:jeremy@uber.com">jeremy@uber.com</a>&gt;</code></span><br />
-<span id="revnumber">version 1.2,</span>
-<span id="revdate">2013-02-08</span>
+<span id="revnumber">version 2.0.0,</span>
+<span id="revdate">2013-04-15</span>
 <div id="toc">
   <div id="toctitle">Table of Contents</div>
   <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
@@ -1437,12 +1437,87 @@ http://www.gnu.org/software/src-highlite -->
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_changes_in_2_0_0">Changes in 2.0.0</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_package_version_is_now_semantic">Package version is now semantic</h3>
+<div class="paragraph"><p>This release, and all future releases of Clay, will adhere to the
+versioning scheme described at <a href="http://semver.org/">http://semver.org/</a></p></div>
+<div class="paragraph"><p>In summary, the major version will be incremented for backwards
+incompatible changes, the minor version will be incremented for feature
+releases containing backwards compatible changes, and the patch
+version will be incremented for bugfix releases.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_clay_environment_is_deprecated">CLAY_ENVIRONMENT is deprecated</h3>
+<div class="paragraph"><p>The <code>CLAY_ENVIRONMENT</code> variable should no longer be used to
+differentiate production and development environments, but you should
+rather use separate files passed to <code>CLAY_CONFIG</code> for this purpose.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_debug_flags_are_no_longer_environment_based">Debug flags are no longer environment based</h3>
+<div class="paragraph"><p>In previous releases, if <code>CLAY_ENVIRONMENT=development</code> was specified,
+logging and devserver configuration behaved differently. This check
+has been replaced with the <code>debug.enabled</code> boolean flag, which
+defaults to false. You will generally want this enabled in your
+development configuration.</p></div>
+<div class="paragraph"><p>An additional <code>debug.logging</code> boolean has been added that sets the
+default log level of logger instances returned from
+<code>clay.config.get_logger()</code> to DEBUG, rather than INFO.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_default_logging_configuration">Default logging configuration</h3>
+<div class="paragraph"><p>Clay now supports arbitrary logging configuration by setting a
+<code>logging</code> key in your configuration, with contents adhering to the
+<a href="http://docs.python.org/2/library/logging.config.html#logging-config-dictschema">dictConfig
+schema</a> specified by the Python standard library.</p></div>
+<div class="paragraph"><p>If no <code>logging</code> element is found in your configuration, Clay will
+default to logging all messages to stderr at the WARNING level or
+above.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_remote_logging_is_not_automatic">Remote logging is not automatic</h3>
+<div class="paragraph"><p>In previous releases, if <code>logging.host</code> were specified in the config,
+a <code>clay.logger.UDPHandler</code> was initialized and all log messages were
+directed to that host. This option is no longer available, and the
+UDPHandler must be initialized using a dictConfig.</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>logging:
+  handlers:
+    remote:
+      class: clay.logger.UDPHandler
+      level: DEBUG
+      host: logs.example.com
+      port: 22000
+  loggers:
+    root:
+      level: DEBUG
+      handlers: remote</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_flask_init_is_no_longer_required">flask.init is no longer required</h3>
+<div class="paragraph"><p>The <code>flask.init.import_name</code> configuration option is now optional. If
+not specified, the import_name defaults to <code>clayapp</code>.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_clay_now_includes_unit_tests">Clay now includes unit tests</h3>
+<div class="paragraph"><p>The clay framework now has internal tests that may be run with
+<code>python setup.py test</code>. These tests are contained in the tests/
+directory at the top level of the project and utilize the
+(<a href="http://webtest.pythonpaste.org/en/latest/index.html)">webtest
+library</a>.</p></div>
+</div>
+</div>
+</div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2<br />
-Last updated 2013-03-07 23:40:08 UTC
+Version 2.0.0<br />
+Last updated 2013-04-13 18:19:46 UTC
 </div>
 </div>
 </body>
