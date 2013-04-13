@@ -25,13 +25,12 @@ def load_middleware(app, name, mwconfig):
         log.exception('Unable to load WSGI middleware %s' % name)
     return app
 
-flask_init = config.get('flask.init')
-if not flask_init:
-    log.critical('Flask is not configured! Please set CLAY_CONFIG to a file defining flask.init')
-    sys.exit(1)
+flask_init = config.get('flask.init', {
+    'import_name': 'clayapp',
+})
 
 app = Flask(**flask_init)
-app.debug = config.debug()
+app.debug = config.get('debug.enabled', False)
 app.config.update(config.get('flask.config', {}))
 app.secret_key = config.get('flask.secret_key', '')
 application = app
@@ -40,8 +39,8 @@ for name, mwconfig in config.get('middleware', {}).iteritems():
 
 
 def devserver():
-    if not config.debug():
-        sys.stderr.write('This server must be run in development mode, set CLAY_ENVIRONMENT=development and try again\n')
+    if not config.get('debug.enabled', False):
+        sys.stderr.write('This server must be run in development mode, set debug.enabled in your config and try again\n')
         return -1
 
     for modulename in config.get('views'):

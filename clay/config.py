@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import logging.config
 import logging
 import random
 import signal
@@ -17,7 +18,8 @@ SERIALIZERS = {'json': json}
 try:
     import yaml
     SERIALIZERS['yaml'] = yaml
-except ImportError: pass
+except ImportError:
+    pass
 
 
 class Configuration(object):
@@ -28,69 +30,24 @@ class Configuration(object):
         self.paths = []
         self.config = {}
         self.last_updated = None
-        self.remote_log = None
         self.init_logging()
-
-    def debug(self):
-        '''
-        Returns True if this server should use debug configuration and logging
-        '''
-        if os.environ.get('CLAY_ENVIRONMENT', None) == 'development':
-            return True
-        else:
-            return False
 
     def load(self, signum=None, frame=None):
         '''
-        Iterate through expected config file paths, loading the ones that
-        exist and can be parsed.
+        Called when the configuration should be loaded. May be called multiple
+        times during the execution of a program to change or update the
+        configuration. This method should be overridden by a subclass.
         '''
+        return
 
-        cwd = os.getcwd()
-        if not cwd in sys.path:
-            sys.path.insert(0, cwd)
-
-        self.config = {}
-        paths = list(self.paths)
-
-        if 'CLAY_CONFIG' in os.environ:
-            paths += os.environ['CLAY_CONFIG'].split(':')
-
-        for path in paths:
-            path = os.path.expandvars(path)
-            path = os.path.abspath(path)
-            config = self.load_from_file(path)
-            self.config.update(config)
-
-        self.init_remote_logging()
-        self.last_updated = time.time()
-
-    def load_from_file(self, filename):
+    def debug(self):
         '''
-        Attempt to load configuration from the given filename. Returns an empty
-        dict upon failure.
+        Returns True if this server should use debug configuration and logging.
+        This method is deprecated and 
         '''
-
-        try:
-            filetype = os.path.splitext(filename)[-1].lstrip('.').lower()
-            if not filetype in SERIALIZERS:
-                sys.stderr.write('Unknown config format %s, parsing as JSON\n' % filetype)
-                filetype = 'json'
-
-            # Try getting a safe_load function. If absent, use 'load'.
-            load = getattr(SERIALIZERS[filetype], "safe_load",
-                           getattr(SERIALIZERS[filetype], "load"))
-
-            config = load(file(filename, 'r'))
-            if not config:
-                raise ValueError('Empty config')
-            sys.stderr.write('Loaded configuration from %s\n' % filename)
-            return config
-        except ValueError, e:
-            sys.stderr.write('Error loading config from %s: %s\n' %
-                (filename, str(e)))
-            sys.exit(1)
-            return {}
+        log = self.get_logger('clay.config')
+        log.warning('Configuration.debug() is deprecated and may be removed in a future release of clay-flask. Please use config.get("debug.enabled", False) instead')
+        return self.get('debug.enabled', False)
 
     def get(self, key, default=None):
         '''
@@ -110,44 +67,29 @@ class Configuration(object):
 
     def init_logging(self):
         '''
-        Configure the root logger to output to stderr, with verbosity if
-        self.debug() return True
+        Configure the default root logger to output WARNING to stderr
         '''
+        logging.basicConfig(
+            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+            level=logging.WARNING)
 
-        fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-        stderr = logging.StreamHandler()
-        stderr.setFormatter(fmt)
+    def reset_logging(self):
+        '''
+        Reset the root logger configuration to no handlers
+        '''
         root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-        root.addHandler(stderr)
+        if root.handlers:
+            for handler in list(root.handlers):
+                root.removeHandler(handler)
 
-        if self.debug():
-            stderr.setLevel(logging.DEBUG)
-        else:
-            stderr.setLevel(logging.WARNING)
-
-    def init_remote_logging(self):
+    def configure_logging(self, log_config):
         '''
-        Configure logging to a remote server only if this is *not* a debug
-        instance.
+        Remove all existing logging configuration and use the given
+        configuration instead. The format of the log_config dict is specified at
+        http://docs.python.org/2/library/logging.config.html#logging-config-dictschema
         '''
-
-        if self.debug():
-            return
-
-        root = logging.getLogger()
-        if self.remote_log:
-            root.removeHandler(self.remote_log)
-
-        loghost = self.get('logging.host', None)
-        if loghost:
-            host, port = loghost.split(':', 1)
-            port = int(port)
-
-            udplog = logger.UDPHandler(host, port)
-            udplog.setLevel(logging.INFO)
-            self.remote_log = udplog
-            root.addHandler(udplog)
+        self.reset_logging()
+        logging.config.dictConfig(log_config)
 
     def get_logger(self, name):
         '''
@@ -156,7 +98,7 @@ class Configuration(object):
         '''
 
         log = logging.getLogger(name)
-        if self.debug():
+        if self.get('debug.logging', False):
             log.setLevel(logging.DEBUG)
         else:
             log.setLevel(logging.INFO)
@@ -176,7 +118,65 @@ class Configuration(object):
         return feature.get('enabled', False)
 
 
-CONFIG = Configuration()
+class FileConfiguration(Configuration):
+    def load(self, signum=None, frame=None):
+        '''
+        Iterate through expected config file paths, loading the ones that
+        exist and can be parsed.
+        '''
+        cwd = os.getcwd()
+        if not cwd in sys.path:
+            sys.path.insert(0, cwd)
+
+        self.config = {}
+        paths = list(self.paths)
+
+        if 'CLAY_CONFIG' in os.environ:
+            paths += os.environ['CLAY_CONFIG'].split(':')
+
+        for path in paths:
+            path = os.path.expandvars(path)
+            path = os.path.abspath(path)
+            config = self.load_from_file(path)
+            self.config.update(config)
+
+        self.last_updated = time.time()
+
+        self.init_logging()
+        log_config = self.get('logging')
+        if log_config:
+            self.configure_logging(log_config)
+
+    def load_from_file(self, filename):
+        '''
+        Attempt to load configuration from the given filename. Returns an empty
+        dict upon failure.
+        '''
+        log = self.get_logger('clay.config')
+
+        try:
+            filetype = os.path.splitext(filename)[-1].lstrip('.').lower()
+            if not filetype in SERIALIZERS:
+                log.warning('Unknown config format %s, parsing as JSON' % filetype)
+                filetype = 'json'
+
+            # Try getting a safe_load function. If absent, use 'load'.
+            load = getattr(SERIALIZERS[filetype], "safe_load",
+                           getattr(SERIALIZERS[filetype], "load"))
+
+            config = load(file(filename, 'r'))
+            if not config:
+                raise ValueError('Empty config')
+            log.info('Loaded configuration from %s' % filename)
+            return config
+        except ValueError, e:
+            log.critical('Error loading config from %s: %s' %
+                (filename, str(e)))
+            sys.exit(1)
+            return {}
+
+
+CONFIG = FileConfiguration()
 CONFIG.load()
 
 # Upon receiving a SIGHUP, configuration will be reloaded

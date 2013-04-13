@@ -1,7 +1,7 @@
 Clay Framework
 ==============
 Jeremy Grosser <jeremy@uber.com>
-v1.2.1, 2013-02-08
+v2.0.0, 2013-04-15
 :toc:
 
 Clay is a framework for building RESTful backend services using best practices. It's a wrapper around Flask (http://flask.pocoo.org) along with several convenient, standardized, performance enhanced ways of performing common tasks like sending email and connecting to a database. Clay is available under the MIT License.
@@ -42,20 +42,20 @@ Now that we've got a view module and a config, we can run the clay devserver...
 === Running the development server
 [source,shell]
 --------------------------------------------------------------------------------
-export CLAY_ENVIRONMENT=development
 export CLAY_CONFIG=./simple-clay.conf
 clay-devserver
 --------------------------------------------------------------------------------
 
-The `CLAY_ENVIRONMENT` variable *must* be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. `CLAY_CONFIG` is a colon delimited list of config files to be loaded, in order of precedence. For example, if `CLAY_CONFIG=./common.conf:./janky.conf`, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.
+`CLAY_CONFIG` is a colon delimited list of config files to be loaded, in order of precedence. For example, if `CLAY_CONFIG=./common.conf:./janky.conf`, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.
 
 === Running a clay service in production
-Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the `CLAY_ENVIRONMENT` and `CLAY_CONFIG` environment variables need to be set. All view modules listed in the config will be imported at startup.
+Clay exposes itself as a standard WSGI application in the module
+clay.wsgi. The `CLAY_CONFIG` environment variable needs to be set.
+All view modules listed in the config will be imported at startup.
 
 .Running a production clay service with gunicorn
 [source,shell]
 --------------------------------------------------------------------------------
-export CLAY_ENVIRONMENT=production
 export CLAY_CONFIG=./simple-clay.conf
 gunicorn clay.wsgi:application
 --------------------------------------------------------------------------------
@@ -63,7 +63,9 @@ gunicorn clay.wsgi:application
 == API Reference
 
 === clay.config
-The `clay.config` module provides a simple API for accessing configuration information. Internally, all Clay modules use this module to configure themselves.
+The `clay.config` module provides a simple API for accessing
+configuration information. Internally, all Clay modules use this
+module to configure themselves.
 
 Upon import, clay.config attempts to load it's configuration from
 files listed in the `CLAY_CONFIG` environment variable, delimited by
@@ -115,7 +117,8 @@ myservice DEBUG Now we know what's happening!
 --------------------------------------------------------------------------------
 
 ==== clay.config.debug()
-A simple method that returns a boolean. True if this is a development environment, False otherwise. *DO NOT* use the result of this function to enable or disable functionality. Use `clay.config.feature_flag()` instead.
+DEPRECATED, will be removed in a future release. Use
+`clay.config.get('debug.enabled', False)` instead.
 
 ==== clay.config.feature_flag(name)
 Similar to `clay.config.get`, feature_flag is specific to things with boolean values that enable or disable functionality within your service. This method returns True if the given feature is enabled, False otherwise.
@@ -629,3 +632,78 @@ class CerebroTestCase(unittest.TestCase, charlatan.FixturesManagerMixin):
 --------------------------------------------------------------------------------
 
 Important Note: This pattern can not be used for any methods with explicitly roll back a sqlalchemy session, as it will cascade downward and rollback the test's transaction.
+
+== Changes in 2.0.0
+
+=== Package version is now semantic
+
+This release, and all future releases of Clay, will adhere to the
+versioning scheme described at http://semver.org/
+
+In summary, the major version will be incremented for backwards
+incompatible changes, the minor version will be incremented for feature
+releases containing backwards compatible changes, and the patch
+version will be incremented for bugfix releases.
+
+=== CLAY_ENVIRONMENT is deprecated
+
+The `CLAY_ENVIRONMENT` variable should no longer be used to
+differentiate production and development environments, but you should
+rather use separate files passed to `CLAY_CONFIG` for this purpose.
+
+=== Debug flags are no longer environment based
+
+In previous releases, if `CLAY_ENVIRONMENT=development` was specified,
+logging and devserver configuration behaved differently. This check
+has been replaced with the `debug.enabled` boolean flag, which
+defaults to false. You will generally want this enabled in your
+development configuration.
+
+An additional `debug.logging` boolean has been added that sets the
+default log level of logger instances returned from
+`clay.config.get_logger()` to DEBUG, rather than INFO.
+
+=== Default logging configuration
+
+Clay now supports arbitrary logging configuration by setting a
+`logging` key in your configuration, with contents adhering to the
+http://docs.python.org/2/library/logging.config.html#logging-config-dictschema[dictConfig
+schema] specified by the Python standard library.
+
+If no `logging` element is found in your configuration, Clay will
+default to logging all messages to stderr at the WARNING level or
+above.
+
+=== Remote logging is not automatic
+
+In previous releases, if `logging.host` were specified in the config,
+a `clay.logger.UDPHandler` was initialized and all log messages were
+directed to that host. This option is no longer available, and the
+UDPHandler must be initialized using a dictConfig.
+
+--------------------------------------------------------------------------------
+logging:
+  handlers:
+    remote:
+      class: clay.logger.UDPHandler
+      level: DEBUG
+      host: logs.example.com
+      port: 22000
+  loggers:
+    root:
+      level: DEBUG
+      handlers: remote
+--------------------------------------------------------------------------------
+
+=== flask.init is no longer required
+
+The `flask.init.import_name` configuration option is now optional. If
+not specified, the import_name defaults to `clayapp`.
+
+=== Clay now includes unit tests
+
+The clay framework now has internal tests that may be run with
+`python setup.py test`. These tests are contained in the tests/
+directory at the top level of the project and utilize the
+(http://webtest.pythonpaste.org/en/latest/index.html)[webtest
+library].

@@ -1,3 +1,9 @@
+clay (2.0.0) unstable; urgency=low
+
+  * New release
+
+ -- Jeremy Grosser <jeremy@synack.me>  Mon, 15 Apr 2013 23:06:36 +0000
+
 clay (1.2) unstable; urgency=low
 
   * Mail module now supports more complex messaging

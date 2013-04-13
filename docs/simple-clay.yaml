@@ -1,8 +1,5 @@
-flask:
-  init:
-    import_name: helloworldapp
-
 debug:
+  enabled: true
   server:
     host: 127.0.0.1
     port: 8000
