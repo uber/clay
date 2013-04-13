@@ -804,12 +804,8 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="color: #FF0000">{</span>
-        <span style="color: #FF0000">"flask"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                <span style="color: #FF0000">"init"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                        <span style="color: #FF0000">"import_name"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"helloworldapp"</span>
-                <span style="color: #FF0000">}</span>
-        <span style="color: #FF0000">}</span><span style="color: #990000">,</span>
         <span style="color: #FF0000">"debug"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+                <span style="color: #FF0000">"enabled"</span><span style="color: #990000">:</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span>
                 <span style="color: #FF0000">"server"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
                         <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"127.0.0.1"</span><span style="color: #990000">,</span>
                         <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">8000</span>
@@ -829,22 +825,22 @@ http://www.gnu.org/software/src-highlite -->
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_ENVIRONMENT</span><span style="color: #990000">=</span>development
-<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
 clay-devserver</tt></pre></div></div>
-<div class="paragraph"><p>The <code>CLAY_ENVIRONMENT</code> variable <strong>must</strong> be set to "development" in order to run clay-devserver. This is a safety precaution to keep production configurations from being run on non-production servers. <code>CLAY_CONFIG</code> is a colon delimited list of config files to be loaded, in order of precedence. For example, if <code>CLAY_CONFIG=./common.conf:./janky.conf</code>, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.</p></div>
+<div class="paragraph"><p><code>CLAY_CONFIG</code> is a colon delimited list of config files to be loaded, in order of precedence. For example, if <code>CLAY_CONFIG=./common.conf:./janky.conf</code>, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_running_a_clay_service_in_production">Running a clay service in production</h3>
-<div class="paragraph"><p>Clay exposes itself as a standard WSGI application in the module clay.wsgi. Both the <code>CLAY_ENVIRONMENT</code> and <code>CLAY_CONFIG</code> environment variables need to be set. All view modules listed in the config will be imported at startup.</p></div>
+<div class="paragraph"><p>Clay exposes itself as a standard WSGI application in the module
+clay.wsgi. The <code>CLAY_CONFIG</code> environment variable needs to be set.
+All view modules listed in the config will be imported at startup.</p></div>
 <div class="listingblock">
 <div class="title">Running a production clay service with gunicorn</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_ENVIRONMENT</span><span style="color: #990000">=</span>production
-<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
 gunicorn clay<span style="color: #990000">.</span>wsgi<span style="color: #990000">:</span>application</tt></pre></div></div>
 </div>
 </div>
@@ -854,7 +850,9 @@ gunicorn clay<span style="color: #990000">.</span>wsgi<span style="color: #99000
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_clay_config">clay.config</h3>
-<div class="paragraph"><p>The <code>clay.config</code> module provides a simple API for accessing configuration information. Internally, all Clay modules use this module to configure themselves.</p></div>
+<div class="paragraph"><p>The <code>clay.config</code> module provides a simple API for accessing
+configuration information. Internally, all Clay modules use this
+module to configure themselves.</p></div>
 <div class="paragraph"><p>Upon import, clay.config attempts to load it&#8217;s configuration from
 files listed in the <code>CLAY_CONFIG</code> environment variable, delimited by
 colons. Each file&#8217;s name is examined for a known file extension and
@@ -908,7 +906,8 @@ myservice DEBUG Now we know what's happening<span style="color: #990000">!</span
 </div>
 <div class="sect3">
 <h4 id="_clay_config_debug">clay.config.debug()</h4>
-<div class="paragraph"><p>A simple method that returns a boolean. True if this is a development environment, False otherwise. <strong>DO NOT</strong> use the result of this function to enable or disable functionality. Use <code>clay.config.feature_flag()</code> instead.</p></div>
+<div class="paragraph"><p>DEPRECATED, will be removed in a future release. Use
+<code>clay.config.get('debug.enabled', False)</code> instead.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clay_config_feature_flag_name">clay.config.feature_flag(name)</h4>
@@ -1517,7 +1516,7 @@ library</a>.</p></div>
 <div id="footer">
 <div id="footer-text">
 Version 2.0.0<br />
-Last updated 2013-04-13 18:19:46 UTC
+Last updated 2013-04-13 18:24:44 UTC
 </div>
 </div>
 </body>
