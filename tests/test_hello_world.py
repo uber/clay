@@ -3,7 +3,7 @@ import webtest.lint
 import webtest
 import os
 
-os.environ['CLAY_CONFIG'] = 'tests/config.json'
+os.environ['CLAY_CONFIG'] = 'config.json'
 
 from clay import app, config
 import clay.wsgi
