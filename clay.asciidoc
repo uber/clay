@@ -683,6 +683,7 @@ UDPHandler must be initialized using a dictConfig.
 
 --------------------------------------------------------------------------------
 logging:
+  version: 1
   handlers:
     remote:
       class: clay.logger.UDPHandler
