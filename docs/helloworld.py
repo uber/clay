@@ -1,6 +1,6 @@
 # This is a minimalist example of a clay view. Run it like so:
 #
-#   CLAY_CONFIG=simple-clay.conf CLAY_ENVIRONMENT=development clay-devserver
+#   CLAY_CONFIG=simple-clay.conf clay-devserver
 #
 from __future__ import absolute_import
 from clay import app
