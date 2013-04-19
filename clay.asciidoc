@@ -510,17 +510,18 @@ to replace the read-only dictionary with a malleable one:
 class CerebroTestCase(unittest.TestCase):
 
     def __call__(self):
-        #Copy configuration dictionary
+        # Copy configuration dictionary
         self.config_copy = clay.config.CONFIG.config.copy()
 
-        #Do pre-test stuff
+        # Do pre-test stuff
         self._pre_setup()
 
-        #Patch config dictionary so tests can customize
-        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
+        # Patch config dictionary so tests can customize in setUp but also
+        # in the test function itself.
+        with mock.patch.object(clay.config.CONFIG, "config", self._config_copy):
             unittest.TestCase.__call__(self, result)
 
-        #Do post-test stuff
+        # Do post-test stuff
         self._post_teardown()
 
     def _pre_setup(self):
@@ -540,38 +541,22 @@ well as a utility function so that the configuration can be manipulated for a si
 --------------------------------------------------------------------------------
 class CerebroTestCase(unittest.TestCase):
 
-    def __call__(self):
-
-        #Do pre-test stuff
-
-        self.config_copy = clay.config.CONFIG.config.copy()
-
-        self._pre_setup()
-
-        #Patch config dictionary so tests can customize
-        with mock.patch.dict(clay.config.CONFIG.config, self.config_copy, clear=True):
-            unittest.TestCase.__call__(self, result)
-
-        #Do post-test stuff
-        self._post_teardown()
+    ...
 
     def _pre_setup(self):
         if hasattr(self, 'test_config'):
-            #Support ability for tests to have their own test settings
+            # Support ability for tests to have their own test settings
             for attr, value in self.test_config.items():
                 self.set_config(attr, value)
 
-
-    def _post_teardown(self):
-        pass
-
     def set_config(self, key, value):
-        """Helper function that tests can call to set config values."""
+        """Set a clay configuration option."""
 
         val = self.config_copy
         keys = key.split('.')
 
         for k in keys[:-1]:
+            val.setdefault(k, {})
             val = val[k]
 
         val[keys[-1]] = value
@@ -585,20 +570,14 @@ An example test using the above patterns:
 --------------------------------------------------------------------------------
 class TestToast(CerebroTestCase):
 
-    #These values will apply to all tests in this class
+    # These values will apply to all tests in this class
     test_config = {
         'toast.one_sided': False,
         'toast.two_sided': True
     }
 
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_burnt_toast(self):
-        #These values will apply for only this test
+        # These values will apply for only this test
         self.set_config('toast.one_sided', True)
         self.set_config('toast.two_sided', False)
 
