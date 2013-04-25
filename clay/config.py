@@ -88,7 +88,6 @@ class Configuration(object):
         configuration instead. The format of the log_config dict is specified at
         http://docs.python.org/2/library/logging.config.html#logging-config-dictschema
         '''
-        self.reset_logging()
         logging.config.dictConfig(log_config)
 
     def get_logger(self, name):
