@@ -8,7 +8,7 @@ from multiprocessing import util
 
 setup(
     name='clay-flask',
-    version='2.0.1',
+    version='2.0.2',
     author='Jeremy Grosser',
     author_email='jeremy@uber.com',
     packages=['clay'],

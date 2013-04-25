@@ -1,3 +1,9 @@
+clay (2.0.2) precise; urgency=low
+
+  * Fix logging reset at startup
+
+ -- Jeremy Grosser <jeremy@synack.me>  Thu, 25 Apr 2013 18:01:23 +0000
+
 clay (2.0.1) unstable; urgency=low
 
   * Fix clay.logger import 
