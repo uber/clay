@@ -32,7 +32,6 @@ flask_init = config.get('flask.init', {
 app = Flask(**flask_init)
 app.debug = config.get('debug.enabled', False)
 app.config.update(config.get('flask.config', {}))
-app.secret_key = config.get('flask.secret_key', '')
 application = app
 for name, mwconfig in config.get('middleware', {}).iteritems():
     application = load_middleware(application, name, mwconfig)
