@@ -10,8 +10,6 @@ import os.path
 import os
 import sys
 
-from clay import logger
-
 
 SERIALIZERS = {'json': json}
 
@@ -69,9 +67,11 @@ class Configuration(object):
         '''
         Configure the default root logger to output WARNING to stderr
         '''
-        logging.basicConfig(
-            format='%(asctime)s %(name)s %(levelname)s %(message)s',
-            level=logging.WARNING)
+        fmt='%(asctime)s %(name)s %(levelname)s %(message)s'
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(logging.Formatter(fmt))
+        stderr_handler.setLevel(logging.WARNING)
+        logging.getLogger().addHandler(stderr_handler)
 
     def reset_logging(self):
         '''
