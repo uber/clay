@@ -76,7 +76,7 @@ class Configuration(object):
         try:
             filetype = os.path.splitext(filename)[-1].lstrip('.').lower()
             if not filetype in SERIALIZERS:
-                log.warning('Unknown config format %s, parsing as JSON\n' % filetype)
+                log.warning('Unknown config format %s, parsing as JSON', filetype)
                 filetype = 'json'
 
             # Try getting a safe_load function. If absent, use 'load'.
@@ -86,11 +86,10 @@ class Configuration(object):
             config = load(file(filename, 'r'))
             if not config:
                 raise ValueError('Empty config')
-            log.info('Loaded configuration from %s\n' % filename)
+            log.info('Loaded configuration from %s', filename)
             return config
         except ValueError, e:
-            log.error('Error loading config from %s: %s\n' %
-                (filename, str(e)))
+            log.error('Error loading config from %s: %s', filename, str(e))
             sys.exit(1)
             return {}
 
