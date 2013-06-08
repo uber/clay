@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='clay-flask',
-    version='1.2.1',
+    version='1.2.2',
     author='Jeremy Grosser',
     author_email='jeremy@uber.com',
     packages=['clay'],
