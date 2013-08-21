@@ -1,13 +1,31 @@
 from __future__ import absolute_import
 
 from collections import namedtuple
+import httplib
 import urllib2
+import urlparse
+import os.path
+import ssl
 
 from clay import config
 
 
 Response = namedtuple('Response', ('status', 'headers', 'data'))
 log = config.get_logger('clay.http')
+
+DEFAULT_CA_CERTS = '/etc/ssl/certs/ca-certificates.crt'
+
+
+class VerifiedHTTPSOpener(urllib2.HTTPSHandler):
+    def https_open(self, req):
+        ca_certs = config.get('http.ca_certs_file', DEFAULT_CA_CERTS)
+        if config.get('http.verify_server_certificates', True) and os.path.exists(ca_certs):
+            frags = urlparse.urlparse(req.get_full_url())
+            ssl.get_server_certificate((frags.hostname, frags.port or 443),
+                ca_certs=ca_certs)
+        return self.do_open(httplib.HTTPSConnection, req)
+
+urllib2.install_opener(urllib2.build_opener(VerifiedHTTPSOpener))
 
 
 class Request(urllib2.Request):
