@@ -1,3 +1,11 @@
+clay (2.0.3) unstable; urgency=low
+
+  * Change clay.http to do certificate verification (disable by setting config
+    option 'http.verify_server_certificates' to False).
+  * Add better testing for clay.http
+
+ -- James Brown <jbrown@uber.com>  Thu, 29 Aug 2013 16:34:02 -0700
+
 clay (2.0.2) precise; urgency=low
 
   * Fix logging reset at startup

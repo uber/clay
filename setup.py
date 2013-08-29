@@ -4,11 +4,12 @@ from setuptools import setup
 # Adding this import avoids an exception caused by nosetests
 # http://stackoverflow.com/questions/9352656/python-assertionerror-when-running-nose-tests-with-coverage
 from multiprocessing import util
+util = util  # make pyflakes/etc happy
 
 
 setup(
     name='clay-flask',
-    version='2.0.2',
+    version='2.0.3',
     author='Jeremy Grosser',
     author_email='jeremy@uber.com',
     packages=['clay'],

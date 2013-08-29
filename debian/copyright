@@ -1,0 +1,13 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: clay
+Upstream-Contact: <jeremy@uber.com>
+Source: https://github.com/uber/clay
+
+Files: *
+Copyright: 2013 Uber Technologies, Inc.
+License: MIT
+  For the full source of this license, see the file LICENSE included in the source distribution
+
+Files: debian/*
+Copyright: 2013 Uber Technologies, Inc.
+License: MIT

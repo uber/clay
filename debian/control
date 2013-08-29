@@ -2,10 +2,10 @@ Source: clay
 Section: python
 Priority: extra
 Maintainer: Jeremy Grosser <jeremy@uber.com>
-Build-Depends: debhelper (>= 8.0.0), python-setuptools
-Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 8.0.0), python-all (>= 2.7.0), python-setuptools
+Standards-Version: 3.9.3
 
 Package: clay
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Depends: python (>= 2.7), ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
 Description: Clay is a framework for building RESTful backend services
