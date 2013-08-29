@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import contextlib
 from collections import namedtuple
 import httplib
 import urllib2
@@ -51,24 +52,31 @@ class Request(urllib2.Request):
 
 def request(method, uri, headers={}, data=None):
     '''
-    Convenience wrapper around urllib2
+    Convenience wrapper around urllib2. Returns a Response namedtuple with 'status', 'headers', and 'data' fields
     '''
     req = Request(uri, headers=headers, data=data, method=method)
     if not req.get_type() in ('http', 'https'):
         raise urllib2.URLError('Only http and https protocols are supported')
 
     try:
-        resp = urllib2.urlopen(req)
-        resp = Response(
-            status=resp.getcode(),
-            headers=resp.headers,
-            data=resp.read())
-        log.debug('%i %s %s' % (resp.status, method, uri))
+        with contextlib.closing(urllib2.urlopen(req)) as resp:
+            resp = Response(
+                status=resp.getcode(),
+                headers=resp.headers,
+                data=resp.read())
+            log.debug('%i %s %s' % (resp.status, method, uri))
     except urllib2.HTTPError, e:
-        resp = Response(
-            status=e.getcode(),
-            headers=e.headers,
-            data=e.read())
+        # if there was a connection error, the underlying fd might be None and we can't read it
+        if e.fp is not None:
+            resp = Response(
+                status=e.getcode(),
+                headers=e.hdrs,
+                data=e.read())
+        else:
+            resp = Response(
+                status=e.getcode(),
+                headers=e.hdrs,
+                data=None)
         log.warning('%i %s %s' % (resp.status, method, uri))
 
     return resp
