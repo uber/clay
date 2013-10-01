@@ -8,4 +8,7 @@ from clay import app
 
 @app.route('/', methods=['GET'])
 def hello():
+    '''
+    Ensures that the world is still there.
+    '''
     return 'Hello World!'
