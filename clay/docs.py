@@ -21,7 +21,7 @@ def parse_docstring_param(directive, key, value):
         directive = 'body'
         p['type'] = 'complex'
 
-    if directive in ('query', 'body', 'path'):
+    if directive in ('query', 'body', 'path', 'form'):
         p['paramType'] = directive
     elif directive == 'reqheader':
         p['paramType'] = 'header'
@@ -58,7 +58,7 @@ def parse_docstring(docstring):
             directive = directive[0]
             key = None
 
-        if directive in ('json', 'body', 'query', 'path', 'reqheader'):
+        if directive in ('json', 'body', 'query', 'path', 'form', 'reqheader'):
             param = parse_docstring_param(directive, key, value)
             if param:
                 params.append(param)
