@@ -201,6 +201,178 @@ if response.status != 200:
   print 'Something bad happened: ', response.data
 --------------------------------------------------------------------------------
 
+=== clay.docs
+
+This module is not meant to be imported by an application, rather it
+can be added to the views list in your app's configuration to provide
+a `GET /_docs` endpoint that parses the docstrings of all registered
+routes and returns a JSON representation of your API's documentation.
+
+==== Docstring Format
+In order to provide enough metadata to generate documentation from
+a route, a machine readable format must be defined for writing
+docstrings. This module uses a format loosely based on Sphinx
+httpdomain (http://pythonhosted.org/sphinxcontrib-httpdomain/).
+
+The first non-whitespace line of the docstring is assumed to be a
+"short doc" or "summary" of the endpoint's behavior. This SHOULD be
+a human readable description of the endpoint less than 72 characters
+long. Lines following the short doc are a longer human readable
+description of the endpoint's behavior.
+
+Any line beginning with a `:` character is split on `:` and assumed to
+expand to a tuple of (directive, key, value).
+
+Within the value of a directive, if an opening `{` and closing `}`
+brace are detected, the substring within the braces is parsed as a
+JSON hash with additional metadata about this parameter. Currently
+this is only used for specifying which parameters are required.
+
+The `:rtype:` directive is special, it does not require a key but
+references a dict object by import name. This dict defines the fields
+of a JSON response body in a format defined in JSON-Schema format
+utilized by swagger.  (http://json-schema.org/)
+(https://github.com/wordnik/swagger-core/wiki/datatypes)
+
+[source,python]
+--------------------------------------------------------------------------------
+@app.route('/things/search', methods=['GET'])
+def hello():
+  '''
+  Search for things
+  
+  This is an example of a search endpoint that takes query string
+  parameters to limit the scope of the search.
+
+  :query keywords: A whitespace delimited list of keywords to be included in the search. The implicit boolean AND is applied to all terms. {"required": true}
+  :query limit: The number of results to return, if not specified 100 is assumed
+  :status 200: Search completed, results are included in the response
+  :status 400: Required parameter keywords was not specified or limit was not an integer
+  :status 404: Search completed, but no results matched
+  :rtype: things.protocol.SearchResults
+  '''
+  # TODO: implement searching things
+  pass
+
+
+SearchResults = {
+  "id": "SearchResults",
+  "required": ["count", "results"],
+  "properties": {
+    "count": {
+      "type": "integer"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "SearchResult"
+      }
+    }
+  }
+}
+
+SearchResult = {
+  "id": "SearchResult",
+  "required": ["name", "rank", "link"],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "rank": {
+      "type": "integer"
+    },
+    "link": {
+      "type": "string"
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+==== Supported docstring directives
+
+===== query
+Defines a query string argument.
+
+--------------------------------------------------------------------------------
+:query <argname>: <description>
+
+Example:
+GET /foo?bar=baz
+
+:query bar: You might specify something like baz
+--------------------------------------------------------------------------------
+
+===== form
+Defines a POST application/x-www-form-urlencoded field
+
+--------------------------------------------------------------------------------
+:form <argname>: <description>
+
+Example:
+POST /foo
+Content-type: application/x-www-form-urlencoded
+
+bar=baz
+
+:form bar: You might specify something like baz
+--------------------------------------------------------------------------------
+
+===== body
+Defines a field of a structured HTTP request body. The semantics of
+the body structure are not defined. In most cases, this will provide a
+reference to a JSON hash key.
+
+--------------------------------------------------------------------------------
+:body <argname>: <description>
+
+Example:
+POST /foo
+Content-type: application/json
+
+{"bar": "baz"}
+
+:body bar: You might specify something like baz
+--------------------------------------------------------------------------------
+
+===== path
+Defines a URL path part in reference to the view's route.
+
+--------------------------------------------------------------------------------
+:path <argname>: <description>
+
+Example:
+@app.route('/foo/<bar>', methods=['GET'])
+def foo(bar):
+  pass
+
+GET /foo/baz
+
+:path bar: You might specify something like baz
+--------------------------------------------------------------------------------
+
+===== reqheader
+Defines an HTTP request header.
+
+--------------------------------------------------------------------------------
+:reqheader <header>: <description>
+
+Example:
+POST /foo
+Authorization: OAuth token="123456"
+
+:reqheader Authorization: Contains the authorization method, followed by a space delimited list of arguments identifying the requester
+--------------------------------------------------------------------------------
+
+==== Required arguments
+(https://github.com/wordnik/swagger-core/wiki/Parameters)
+
+--------------------------------------------------------------------------------
+:query <argname>: <description>
+
+Example:
+:query foo: Does foo like things {"required": true}
+--------------------------------------------------------------------------------
+
 == Useful Patterns
 
 === Testing with Clay: Letting tests change clay's configuration
