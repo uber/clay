@@ -1,3 +1,10 @@
+clay (2.0.4) unstable; urgency=low
+
+  * Revert devserver logging changes
+  * Add clay.docs module for online autodoc in swagger format
+
+ -- Jeremy Grosser <jeremy@synack.me>  Tue,  1 Oct 2013 18:12:01 -0700
+
 clay (2.0.3) unstable; urgency=low
 
   * Change clay.http to do certificate verification (disable by setting config
