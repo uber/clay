@@ -738,8 +738,8 @@ asciidoc.install(2);
 <h1>Clay Framework</h1>
 <span id="author">Jeremy Grosser</span><br />
 <span id="email"><tt>&lt;<a href="mailto:jeremy@uber.com">jeremy@uber.com</a>&gt;</tt></span><br />
-<span id="revnumber">version 2.0.4,</span>
-<span id="revdate">2013-10-01</span>
+<span id="revnumber">version 2.0.5,</span>
+<span id="revdate">2013-10-24</span>
 <div id="toc">
   <div id="toctitle">Table of Contents</div>
   <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
@@ -879,9 +879,9 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="color: #FF0000">{</span>
-        <span style="color: #FF0000">"users"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                <span style="color: #FF0000">"admins"</span><span style="color: #990000">:</span> <span style="color: #990000">[</span><span style="color: #FF0000">"synack"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"bigo"</span><span style="color: #990000">],</span>
-        <span style="color: #FF0000">}</span>
+    <span style="color: #FF0000">"users"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"admins"</span><span style="color: #990000">:</span> <span style="color: #990000">[</span><span style="color: #FF0000">"synack"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"bigo"</span><span style="color: #990000">]</span>
+    <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -926,15 +926,15 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="color: #FF0000">{</span>
-        <span style="color: #FF0000">"features"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                <span style="color: #FF0000">"new_shiny_bits"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                        <span style="color: #FF0000">"enabled"</span><span style="color: #990000">:</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span>
-                <span style="color: #FF0000">}</span><span style="color: #990000">,</span>
-                <span style="color: #FF0000">"new_scary_thing"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                        <span style="color: #FF0000">"enabled"</span><span style="color: #990000">:</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span>
-                        <span style="color: #FF0000">"percent"</span><span style="color: #990000">:</span> <span style="color: #993399">10.0</span>
-                <span style="color: #FF0000">}</span>
+    <span style="color: #FF0000">"features"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"new_shiny_bits"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+            <span style="color: #FF0000">"enabled"</span><span style="color: #990000">:</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span>
+        <span style="color: #FF0000">}</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"new_scary_thing"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+            <span style="color: #FF0000">"enabled"</span><span style="color: #990000">:</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span>
+            <span style="color: #FF0000">"percent"</span><span style="color: #990000">:</span> <span style="color: #993399">10.0</span>
         <span style="color: #FF0000">}</span>
+    <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="paragraph"><p>In the example above, <tt>feature_flag('new_shiny_bits')</tt> would return True and <tt>feature_flag('new_scary_thing')</tt> will only return True 10% of the time. The percent option is useful for A/B testing new features or slowly rolling out a feature for a subset of requests to gauge performance.</p></div>
 </div>
@@ -957,13 +957,13 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="color: #FF0000">{</span>
-        <span style="color: #FF0000">"smtp"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
-                <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"smtp.example.com"</span><span style="color: #990000">,</span>
-                <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">25</span><span style="color: #990000">,</span>
-                <span style="color: #FF0000">"username"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"myname"</span><span style="color: #990000">,</span>
-                <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"superseekrit"</span>
-                <span style="color: #FF0000">"from"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"test@example.com"</span>
-        <span style="color: #FF0000">}</span>
+    <span style="color: #FF0000">"smtp"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"smtp.example.com"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">25</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"username"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"myname"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"superseekrit"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"from"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"test@example.com"</span>
+    <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="listingblock">
 <div class="title">Sending email</div>
@@ -1003,6 +1003,26 @@ http://www.gnu.org/software/src-highlite -->
 response <span style="color: #990000">=</span> http<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">request</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'GET'</span><span style="color: #990000">,</span> <span style="color: #FF0000">'http://httpbin.org/ip'</span><span style="color: #990000">)</span>
 <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> response<span style="color: #990000">.</span>status <span style="color: #990000">!=</span> <span style="color: #993399">200</span><span style="color: #990000">:</span>
   <span style="font-weight: bold"><span style="color: #0000FF">print</span></span> <span style="color: #FF0000">'Something bad happened: '</span><span style="color: #990000">,</span> response<span style="color: #990000">.</span>data</tt></pre></div></div>
+</div>
+<div class="sect3">
+<h4 id="_clay_http_cache_control_8230">clay.http.cache_control(&#8230;)</h4>
+<div class="paragraph"><p>Decorator that adds a Cache-Control header to the response of a view
+function. Each keyword argument to this decorator is appended to the
+Cache-Control value, delimited by a comma. The key of each argument
+has any underscore <tt>_</tt> characters replaced with dash <tt>-</tt>.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">from</span></span> clay <span style="font-weight: bold"><span style="color: #000080">import</span></span> app<span style="color: #990000">,</span> http
+
+@app<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">route</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'/hello_cache'</span><span style="color: #990000">,</span> methods<span style="color: #990000">=[</span><span style="color: #FF0000">'GET'</span><span style="color: #990000">]</span>
+@http<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">cache_control</span></span><span style="color: #990000">(</span>max_age<span style="color: #990000">=</span><span style="color: #993399">3600</span><span style="color: #990000">,</span> public<span style="color: #990000">=</span>True<span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">hello_cache</span></span><span style="color: #990000">():</span>
+  <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="color: #FF0000">'Hi!'</span></tt></pre></div></div>
+<div class="listingblock">
+<div class="content"></div></div>
 </div>
 </div>
 <div class="sect2">
@@ -1700,8 +1720,8 @@ library</a>.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0.4<br />
-Last updated 2013-10-02 21:45:43 UTC
+Version 2.0.5<br />
+Last updated 2013-10-24 20:07:22 UTC
 </div>
 </div>
 </body>
