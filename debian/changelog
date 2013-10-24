@@ -1,3 +1,9 @@
+clay (2.0.5) unstable; urgency=low
+
+  * Add clay.http.cache_control decorator
+
+ -- Jeremy Grosser <jeremy@synack.me>  Thu, 24 Oct 2013 12:43:01 -0700
+
 clay (2.0.4) unstable; urgency=low
 
   * Revert devserver logging changes
