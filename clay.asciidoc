@@ -201,6 +201,28 @@ if response.status != 200:
   print 'Something bad happened: ', response.data
 --------------------------------------------------------------------------------
 
+==== clay.http.cache_control(...)
+Decorator that adds a Cache-Control header to the response of a view
+function. Each keyword argument to this decorator is appended to the
+Cache-Control value, delimited by a comma. The key of each argument
+has any underscore `_` characters replaced with dash `-`.
+
+[source,python]
+--------------------------------------------------------------------------------
+from clay import app, http
+
+@app.route('/hello_cache', methods=['GET']
+@http.cache_control(max_age=3600, public=True)
+def hello_cache():
+  return 'Hi!'
+--------------------------------------------------------------------------------
+
+[source]
+--------------------------------------------------------------------------------
+HTTP/1.1 200 OK
+Cache-Control: max-age=3600, public
+--------------------------------------------------------------------------------
+
 === clay.docs
 
 This module is not meant to be imported by an application, rather it

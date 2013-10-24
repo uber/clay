@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 
-import contextlib
+from flask import make_response
 from collections import namedtuple
+import contextlib
+import functools
 import httplib
 import urllib2
 import urlparse
@@ -80,3 +82,36 @@ def request(method, uri, headers={}, data=None):
         log.warning('%i %s %s' % (resp.status, method, uri))
 
     return resp
+
+
+def cache_control(**cache_options):
+    '''
+    Decorator that adds a Cache-Control header to the response returned from a
+    view. Each keyword argument to this decorator is an option to be appended
+    to the Cache-Control header. Underscores '_' are replaced with dashes '-'
+    and boolean values are assumed to be directives.
+
+    Examples:
+    @cache_control(max_age=0, no_cache=True)
+    @cache_control(max_age=3600, public=True)
+    '''
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            response = make_response(f(*args, **kwargs))
+
+            cache_control = []
+            for key, value in cache_options.iteritems():
+                key = key.replace('_', '-')
+                if isinstance(value, bool):
+                    cache_control.append(key)
+                elif isinstance(value, basestring):
+                    cache_control.append('%s="%s"' % (key, value))
+                else:
+                    cache_control.append('%s=%s' % (key, value))
+            cache_control = ', '.join(cache_control)
+
+            response.headers['Cache-Control'] = cache_control
+            return response
+        return wrapper
+    return decorator
