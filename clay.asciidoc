@@ -86,9 +86,9 @@ Several methods are exposed at the top level of the clay.config module and are i
 [source,javascript]
 --------------------------------------------------------------------------------
 {
-	"users": {
-		"admins": ["synack", "bigo"],
-	}
+    "users": {
+        "admins": ["synack", "bigo"]
+    }
 }
 --------------------------------------------------------------------------------
 
@@ -127,15 +127,15 @@ Similar to `clay.config.get`, feature_flag is specific to things with boolean va
 [source,javascript]
 --------------------------------------------------------------------------------
 {
-	"features": {
-		"new_shiny_bits": {
-			"enabled": true
-		},
-		"new_scary_thing": {
-			"enabled": true,
-			"percent": 10.0
-		}
-	}
+    "features": {
+        "new_shiny_bits": {
+            "enabled": true
+        },
+        "new_scary_thing": {
+            "enabled": true,
+            "percent": 10.0
+        }
+    }
 }
 --------------------------------------------------------------------------------
 
@@ -157,13 +157,13 @@ By default the From address is populated by the `smtp.from` config option. This 
 [source,javascript]
 --------------------------------------------------------------------------------
 {
-	"smtp": {
-		"host": "smtp.example.com",
-		"port": 25,
-		"username": "myname",
-		"password": "superseekrit"
-                "from": "test@example.com"
-        }
+    "smtp": {
+        "host": "smtp.example.com",
+        "port": 25,
+        "username": "myname",
+        "password": "superseekrit",
+        "from": "test@example.com"
+    }
 }
 --------------------------------------------------------------------------------
 
@@ -262,7 +262,7 @@ utilized by swagger.  (http://json-schema.org/)
 def hello():
   '''
   Search for things
-  
+
   This is an example of a search endpoint that takes query string
   parameters to limit the scope of the search.
 
