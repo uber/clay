@@ -49,6 +49,10 @@ class LittleRequestTestCase(TestCase):
         response = http.request('GET', 'http://www.google.com')
         self.assertEqual(response, http.Response(status=200, headers={}, data=s.body))
 
+    def test_timeout_passed(self, mock_urlopen, mock_get_cert):
+        http.request('GET', 'http://www.google.com', timeout=10)
+        mock_urlopen.assert_called_once_with(mock.ANY, timeout=10)
+
 
 def create_mock_http_connection():
     mock_conn = mock.Mock(name='https_connection')

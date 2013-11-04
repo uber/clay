@@ -24,8 +24,10 @@ class VerifiedHTTPSOpener(urllib2.HTTPSHandler):
         ca_certs = config.get('http.ca_certs_file', DEFAULT_CA_CERTS)
         if config.get('http.verify_server_certificates', True) and os.path.exists(ca_certs):
             frags = urlparse.urlparse(req.get_full_url())
-            ssl.get_server_certificate((frags.hostname, frags.port or 443),
-                ca_certs=ca_certs)
+            ssl.get_server_certificate(
+                (frags.hostname, frags.port or 443),
+                ca_certs=ca_certs
+            )
         return self.do_open(httplib.HTTPSConnection, req)
 
 urllib2.install_opener(urllib2.build_opener(VerifiedHTTPSOpener))
@@ -52,16 +54,18 @@ class Request(urllib2.Request):
             return 'GET'
 
 
-def request(method, uri, headers={}, data=None):
+def request(method, uri, headers={}, data=None, timeout=None):
     '''
     Convenience wrapper around urllib2. Returns a Response namedtuple with 'status', 'headers', and 'data' fields
+
+    It is highly recommended to set the 'timeout' parameter to something sensible
     '''
     req = Request(uri, headers=headers, data=data, method=method)
     if not req.get_type() in ('http', 'https'):
         raise urllib2.URLError('Only http and https protocols are supported')
 
     try:
-        with contextlib.closing(urllib2.urlopen(req)) as resp:
+        with contextlib.closing(urllib2.urlopen(req, timeout=timeout)) as resp:
             resp = Response(
                 status=resp.getcode(),
                 headers=resp.headers,
