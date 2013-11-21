@@ -1,14 +1,16 @@
 from __future__ import absolute_import
 
-from clay import config
-from functools import wraps
 import time
 import socket
+from functools import wraps
+
+from clay import config
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 def send(stat):
+    """Send a stat to statsd"""
     conf = config.get('statsd')
     if not conf:
         return
@@ -16,22 +18,59 @@ def send(stat):
 
 
 def send_counter(bucket, count):
+    """Send a counter stat to statsd
+
+    :param bucket: The bucket to increment by the count
+    :type bucket: string
+    :param count: The count to increment by
+    :type count: integer
+    """
     send('%s:%s|c' % (bucket, count))
 
 
-def send_counter_sample(bucket, count, sample):
+def send_counter_sampled(bucket, count, sample):
+    """Send a sampled counter stat to statsd
+
+    :param bucket: The bucket to increment by the count
+    :type bucket: string
+    :param count: The count to increment by
+    :type count: integer
+    :param sample: The sample rate for the counter. Must be between 0 and 1
+    :type sample: float
+    """
     send('%s:%s|c|@%s' % (bucket, count, sample))
 
 
 def send_timing(bucket, timing):
+    """Send a timing stat to statsd
+
+    :param bucket: The bucket to put the timing data into
+    :type bucket: string
+    :param timing: Timing (usually in ms)
+    :type timing: integer
+    """
     send('%s:%s|ms' % (bucket, timing))
 
 
 def send_gauge(bucket, guage_value):
+    """Send a guage stat to statsd
+
+    :param bucket: The bucket to put the guage into
+    :type bucket: string
+    :param guage_value: Guage value or change, in the form "+N" or "-N"
+    :type guage_value: float or string
+    """
     send('%s:%s|g' % (bucket, guage_value))
 
 
 def send_set(bucket, set_value):
+    """Send a set stat to statsd
+
+    :param bucket: The bucket to put the set into
+    :type bucket: string
+    :param guage_value: Set value
+    :type guage_value: float
+    """
     send('%s:%s|s' % (bucket, set_value))
 
 
