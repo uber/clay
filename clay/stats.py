@@ -34,6 +34,7 @@ def send_gauge(bucket, guage_value):
 def send_set(bucket, set_value):
     send('%s:%s|s' % (bucket, set_value))
 
+
 def timer(statsd_name=None):
     """Wraps a function with statsd timer instrumentation
 
