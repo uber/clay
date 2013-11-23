@@ -1,3 +1,9 @@
+clay (2.1.0) unstable; urgency=low
+
+  * Add clay.database module
+
+ -- Jeremy Grosser <jeremy@synack.me>  Fri, 22 Nov 2013 16:38:01 -0700
+
 clay (2.0.5) unstable; urgency=low
 
   * Add clay.http.cache_control decorator
