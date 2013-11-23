@@ -223,6 +223,82 @@ HTTP/1.1 200 OK
 Cache-Control: max-age=3600, public
 --------------------------------------------------------------------------------
 
+=== clay.database
+
+A lightweight context manager around DB-API (PEP 249) to provide
+access to SQL databases with read/write splitting. sqlite3, psycopg2,
+and MySQLdb modules are supported, although SQL syntax may vary.
+
+In the configuration, lists of read and write servers are configured.
+You must configure at least one of each, even if both sections only
+point to a single server. If multiple servers are specified, a random
+one will be chosen every time the context manager is entered.
+
+Connections to the database are opened upon entering the context
+manager and closed upon exiting. There is no support for connection
+pooling.
+
+==== clay.database.read and clay.database.write
+These are instances of a context manager with __enter__ and __exit__
+functions that open a new database connection upon enter and close
+that connection upon exit.
+
+[source,python]
+--------------------------------------------------------------------------------
+from flask import request
+from clay import app, database
+
+@app.route('/user/create', methods=['POST'])
+def user_create():
+  with database.write as db:
+    cur = db.cursor()
+    cur.execute('INSERT INTO users(email) VALUES(%s)', request.form['email'])
+    cur.close()
+    db.commit()
+
+@app.route('/user/<int:userid>', methods=['GET'])
+def user_show(userid):
+  with database.read as db:
+    cur = db.cursor()
+    cur.execute('SELECT email FROM users WHERE id=?', userid)
+    result = cur.fetchone()
+    cur.close()
+    return result
+--------------------------------------------------------------------------------
+
+Config example::
+[source]
+--------------------------------------------------------------------------------
+{
+  "database": {
+    "module": "psycopg2",
+    "read": [
+      {
+        "host": "readslave1.example.com",
+        "port": 5432,
+        "user": "readuser",
+        "password": "1234"
+      },
+      {
+        "host": "readslave2.example.com",
+        "port": 5432,
+        "user": "readuser",
+        "password": "1234"
+      }
+    ],
+    "write": [
+      {
+        "host": "writemaster1.example.com",
+        "port": 5432,
+        "user": "writeuser",
+        "password": "4321"
+      }
+    ]
+  }
+}
+--------------------------------------------------------------------------------
+
+
 === clay.docs
 
 This module is not meant to be imported by an application, rather it

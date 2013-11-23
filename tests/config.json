@@ -1,5 +1,14 @@
 {
   "debug": {
     "logging": true
+  },
+  "database": {
+    "module": "sqlite3",
+    "read": [
+      {"database": "claytest.db"}
+    ],
+    "write": [
+      {"database": "claytest.db"}
+    ]
   }
 }
