@@ -1018,7 +1018,10 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">hello_cache</span></span><span style="color: #990000">():</span>
   <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="color: #FF0000">'Hi!'</span></tt></pre></div></div>
 <div class="listingblock">
-<div class="content"></div></div>
+<div class="content">
+<pre><code>HTTP/1.1 200 OK
+Cache-Control: max-age=3600, public</code></pre>
+</div></div>
 </div>
 </div>
 <div class="sect2">
@@ -1070,7 +1073,37 @@ Config example
 </dd>
 </dl></div>
 <div class="listingblock">
-<div class="content"></div></div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #FF0000">{</span>
+  <span style="color: #FF0000">"database"</span><span style="color: #990000">:</span> <span style="color: #FF0000">{</span>
+    <span style="color: #FF0000">"module"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"psycopg2"</span><span style="color: #990000">,</span>
+    <span style="color: #FF0000">"read"</span><span style="color: #990000">:</span> <span style="color: #990000">[</span>
+      <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"readslave1.example.com"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">5432</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"user"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"readuser"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"1234"</span>
+      <span style="color: #FF0000">}</span><span style="color: #990000">,</span>
+      <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"readslave2.example.com"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">5432</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"user"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"readuser"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"1234"</span>
+      <span style="color: #FF0000">}</span>
+    <span style="color: #990000">],</span>
+    <span style="color: #FF0000">"write"</span><span style="color: #990000">:</span> <span style="color: #990000">[</span>
+      <span style="color: #FF0000">{</span>
+        <span style="color: #FF0000">"host"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"writemaster1.example.com"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"port"</span><span style="color: #990000">:</span> <span style="color: #993399">5432</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"user"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"writeuser"</span><span style="color: #990000">,</span>
+        <span style="color: #FF0000">"password"</span><span style="color: #990000">:</span> <span style="color: #FF0000">"4321"</span>
+      <span style="color: #FF0000">}</span>
+    <span style="color: #990000">]</span>
+  <span style="color: #FF0000">}</span>
+<span style="color: #FF0000">}</span></tt></pre></div></div>
 </div>
 </div>
 <div class="sect2">
@@ -1769,7 +1802,7 @@ library</a>.</p></div>
 <div id="footer">
 <div id="footer-text">
 Version 2.1.0<br />
-Last updated 2013-11-22 16:44:41 PST
+Last updated 2013-11-22 16:46:24 PST
 </div>
 </div>
 </body>
