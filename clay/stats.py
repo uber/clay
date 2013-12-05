@@ -1,129 +1,217 @@
 from __future__ import absolute_import
 
-import time
+import functools
 import socket
-from functools import wraps
+import time
 
 from clay import config
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+log = config.get_logger('clay.stats')
 
 
-def send(stat):
-    """Send a stat to statsd"""
-    conf = config.get('statsd')
-    if not conf:
-        return
-    sock.sendto(stat + '\n', 0, (conf['host'], conf['port']))
+class StatsConnection(object):
+    '''
+    Handles the lifecycle of stats sockets and connections.
+    '''
+    def __init__(self):
+        self.sock = None
+        self.proto = None
+        self.host = None
+        self.port = None
+
+    def __str__(self):
+        if self.sock is not None:
+            return 'StatsConnection %s %s:%i (connected)' % (
+                   self.proto, self.host, self.port)
+        else:
+            return 'StatsConnection %s %s:%i (not connected)' % (
+                   self.proto, self.host, self.port)
+
+    def get_socket(self):
+        '''
+        Creates and connects a new socket, or returns an existing one if this
+        method was called previously. Returns a (protocol, socket) tuple, where
+        protocol is either 'tcp' or 'udp'. If the returned socket is None, the
+        operation failed and details were logged.
+        '''
+        if self.sock is not None:
+            return (self.proto, self.sock)
+
+        proto = config.get('statsd.protocol', 'udp')
+        self.proto = proto
+        self.host = config.get('statsd.host', None)
+        self.port = config.get('statsd.port', 8125)
+
+        if proto == 'udp':
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            log.debug('Created udp statsd socket')
+            return (proto, self.sock)
+
+        if proto == 'tcp':
+            if self.host is None or not isinstance(self.port, int):
+                log.error('Invalid TCP statsd config: host=%r port=%r',
+                          self.host, self.port)
+                self.sock = None
+            else:
+                try:
+                    self.sock = socket.socket(
+                        socket.AF_INET, socket.SOCK_STREAM)
+                    self.sock.connect((self.host, self.port))
+                    log.debug('Connected tcp statsd socket to %s:%i',
+                              self.host, self.port)
+                except socket.error:
+                    log.exception('Cannot open tcp stats socket %s:%i',
+                                  self.host, self.port)
+                    self.sock = None
+            return (proto, self.sock)
+
+        log.warning('Unknown protocol configured for statsd socket: %s', proto)
+        return (proto, None)
+
+    def reset(self):
+        '''
+        Close and remove references to the socket.
+        '''
+        if self.sock is None:
+            return
+        try:
+            self.sock.close()
+        except socket.error:
+            pass
+        self.sock = None
+        log.debug('Reset statsd socket')
+
+    def send(self, stat):
+        '''
+        Send a raw stat line to statsd. A new socket will be opened and
+        connected if necessary. Returns True if the stat was sent successfully.
+
+        :param stat: The stat to be sent to statsd, with no trailing newline
+        :type stat: string
+        :rtype: boolean
+        '''
+        proto, sock = self.get_socket()
+        if sock is None:
+            return False
+
+        try:
+            if proto == 'udp':
+                sock.sendto(stat + '\n', 0, (self.host, self.port))
+                return True
+
+            if proto == 'tcp':
+                sock.sendall(stat + '\n')
+                return True
+        except socket.error:
+            log.exception('Unable to send to statsd, resetting socket')
+            self.reset()
+        return False
+
+connection = StatsConnection()
+send = connection.send  # backwards compatibility
 
 
-def send_counter(bucket, count):
-    """Send a counter stat to statsd
+class Timer(object):
+    '''
+    Context manager for recording wall-clock timing stats.
 
-    :param bucket: The bucket to increment by the count
-    :type bucket: string
-    :param count: The count to increment by
-    :type count: integer
-    """
-    send('%s:%s|c' % (bucket, count))
+    with clay.stats.Timer("myapp.example"):
+        # do some work
+    '''
+    def __init__(self, key):
+        self.key = key
+        self.start = None
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        now = time.time()
+        elapsed_ms = ((now - self.start) * 1000.0)
+        timing(self.key, elapsed_ms)
 
 
-def send_counter_sampled(bucket, count, sample):
-    """Send a sampled counter stat to statsd
+def count(key, n, sample=1.0):
+    '''
+    Increment a counter by n, or decrement if n is negative.
 
-    :param bucket: The bucket to increment by the count
-    :type bucket: string
-    :param count: The count to increment by
-    :type count: integer
-    :param sample: The sample rate for the counter. Must be between 0 and 1
+    :param key: The key to increment by the count
+    :type key: string
+    :param n: The number to increment by
+    :type n: integer
+    :param sample: Optional sample rate to scale the counter by. Must be a
+                   float between 0.0 and 1.0. Defaults to 1.0
     :type sample: float
-    """
-    send('%s:%s|c|@%s' % (bucket, count, sample))
+    '''
+    if sample == 1.0:
+        return connection.send('%s:%i|c' % (key, n))
+    else:
+        return connection.send('%s:%i|c|@%f' % (key, n, sample))
 
 
-def send_timing(bucket, timing):
-    """Send a timing stat to statsd
+def timing(key, ms):
+    '''
+    Send a timing stat to statsd
 
-    :param bucket: The bucket to put the timing data into
-    :type bucket: string
-    :param timing: Timing (usually in ms)
-    :type timing: integer
-    """
-    send('%s:%s|ms' % (bucket, timing))
-
-
-def send_gauge(bucket, guage_value):
-    """Send a guage stat to statsd
-
-    :param bucket: The bucket to put the guage into
-    :type bucket: string
-    :param guage_value: Guage value or change, in the form "+N" or "-N"
-    :type guage_value: float or string
-    """
-    send('%s:%s|g' % (bucket, guage_value))
+    :param key: A key identifying this stat
+    :type key: string
+    :param ms: A floating point number of milliseconds
+    :type ms: float
+    '''
+    if not isinstance(ms, float):
+        ms = float(ms)
+    return connection.send('%s:%f|ms' % (key, ms))
 
 
-def send_set(bucket, set_value):
-    """Send a set stat to statsd
+def gauge(key, value):
+    '''
+    Send an instantaneous gauge value to statsd
 
-    :param bucket: The bucket to put the set into
-    :type bucket: string
-    :param guage_value: Set value
-    :type guage_value: float
-    """
-    send('%s:%s|s' % (bucket, set_value))
+    :param key: Name of this gauge
+    :type key: string
+    :param value: Gauge value or delta
+    :type value: float
+    '''
+    if not isinstance(value, float):
+        value = float(value)
+    return connection.send('%s:%f|g' % (key, value))
 
 
-def timer(statsd_name=None):
-    """Wraps a function with statsd timer instrumentation
+def unique_set(key, value):
+    '''
+    Send a set stat to statsd, counting the approximate number of unique
+    key/value pairs.
 
-    This logs the amount of time it takes to execute a function
-    """
-    def wrap(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            status_statsd_name = statsd_name or func.__name__
-            start_time = time.time()
+    :param key: Name of this set
+    :type key: string
+    :param value: Set value
+    :type value: string
+    '''
+    return connection.send('%s:%s|s' % (key, value))
+
+
+def wrapper(prefix):
+    '''
+    Decorator that logs timing, call count, and exception count statistics to
+    statsd. Given a prefix of "example", the following keys would be created:
+
+    stats.counts.example.calls
+    stats.counts.example.exceptions
+    stats.timers.example.duration
+
+    :param: prefix
+    :type key: Prefix for stats keys to be created under
+    '''
+
+    def clay_stats_wrapper(func):
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            count('%s.calls' % prefix, 1)
             try:
-                rtrn = func(*args, **kwargs)
+                with Timer('%s.duration' % prefix):
+                    return func(*args, **kwargs)
             except:
-                send_counter("%s.exceptions" % status_statsd_name, 1)
+                count('%s.exceptions' % prefix, 1)
                 raise
-            else:
-                end_time = time.time()
-                ms = (end_time - start_time) * 1000
-                send_timing("%s.response_time" % status_statsd_name, ms)
-            return rtrn
-        return wrapper
-    return wrap
-
-
-def instrumented_func(statsd_name=None, prefix=None):
-    """Wraps a function with statsd instrumentation.
-
-    Must be called as a function to ensure kwargs passed in
-    """
-
-    def wrap(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            status_statsd_name = statsd_name or func.__name__
-            if prefix:
-                status_statsd_name = "%s.%s" % (prefix, status_statsd_name)
-            send_counter("%s.started" % status_statsd_name, 1)
-
-            start_time = time.time()
-            try:
-                rtrn = func(*args, **kwargs)
-            except:
-                send_counter("%s.exceptions" % status_statsd_name, 1)
-                raise
-            else:
-                send_counter("%s.successes" % status_statsd_name, 1)
-
-                end_time = time.time()
-                ms = (end_time - start_time) * 1000
-                send_timing("%s.duration" % status_statsd_name, ms)
-                return rtrn
-        return wrapper
-    return wrap
+        return wrap
+    return clay_stats_wrapper

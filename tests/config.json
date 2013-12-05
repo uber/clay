@@ -10,5 +10,10 @@
     "write": [
       {"database": "claytest.db"}
     ]
+  },
+  "statsd": {
+    "protocol": "tcp",
+    "host": "127.0.0.1",
+    "port": 8125
   }
 }
