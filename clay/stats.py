@@ -18,6 +18,9 @@ class StatsConnection(object):
         self.proto = None
         self.host = None
         self.port = None
+        self.next_retry = None
+        self.backoff = 0.5
+        self.max_backoff = 10.0
 
     def __str__(self):
         if self.sock is not None:
@@ -42,6 +45,9 @@ class StatsConnection(object):
         self.host = config.get('statsd.host', None)
         self.port = config.get('statsd.port', 8125)
 
+        if (self.next_retry is not None) and (self.next_retry > time.time()):
+            return
+
         if proto == 'udp':
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             log.debug('Created udp statsd socket')
@@ -57,10 +63,22 @@ class StatsConnection(object):
                     self.sock = socket.create_connection(address=(self.host, self.port), timeout=4.0)
                     log.debug('Connected tcp statsd socket to %s:%i',
                               self.host, self.port)
+                    # Succesful connection resets retry backoff to 1 second
+                    self.next_retry = None
+                    self.backoff = 0.5
                 except socket.error:
                     log.exception('Cannot open tcp stats socket %s:%i',
                                   self.host, self.port)
                     self.sock = None
+
+                    # Every time a connection fails, we add 25% of the backoff value
+                    # We cap this at max_backoff so that we guarantee retries after
+                    # some period of time
+                    if self.backoff > self.max_backoff:
+                        self.backoff = self.max_backoff
+                    log.warning('Unable to connect to statsd, not trying again for %.03f seconds', self.backoff)
+                    self.next_retry = (time.time() + self.backoff)
+                    self.backoff *= 1.25
             return (proto, self.sock)
 
         log.warning('Unknown protocol configured for statsd socket: %s', proto)
