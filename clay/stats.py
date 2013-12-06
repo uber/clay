@@ -54,9 +54,7 @@ class StatsConnection(object):
                 self.sock = None
             else:
                 try:
-                    self.sock = socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)
-                    self.sock.connect((self.host, self.port))
+                    self.sock = socket.create_connection(address=(self.host, self.port), timeout=4.0)
                     log.debug('Connected tcp statsd socket to %s:%i',
                               self.host, self.port)
                 except socket.error:
@@ -93,14 +91,17 @@ class StatsConnection(object):
         proto, sock = self.get_socket()
         if sock is None:
             return False
+        
+        if not stat.endswith('\n'):
+            stat += '\n'
 
         try:
             if proto == 'udp':
-                sock.sendto(stat + '\n', 0, (self.host, self.port))
+                sock.sendto(stat, 0, (self.host, self.port))
                 return True
 
             if proto == 'tcp':
-                sock.sendall(stat + '\n')
+                sock.sendall(stat)
                 return True
         except socket.error:
             log.exception('Unable to send to statsd, resetting socket')
@@ -123,10 +124,10 @@ class Timer(object):
         self.start = None
 
     def __enter__(self):
-        self.start = time.time()
+        self.start = time.clock()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        now = time.time()
+        now = time.clock()
         elapsed_ms = ((now - self.start) * 1000.0)
         timing(self.key, elapsed_ms)
 
@@ -210,7 +211,7 @@ def wrapper(prefix):
             try:
                 with Timer('%s.duration' % prefix):
                     return func(*args, **kwargs)
-            except:
+            except Exception:
                 count('%s.exceptions' % prefix, 1)
                 raise
         return wrap
