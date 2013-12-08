@@ -1,3 +1,9 @@
+clay (2.1.1) unstable; urgency=low
+
+  * Added features to clay.stats
+
+ -- Jeremy Grosser <jeremy@synack.me>  Sat,  8 Dec 2013 02:18:01 +0000
+
 clay (2.1.0) unstable; urgency=low
 
   * Add clay.database module
