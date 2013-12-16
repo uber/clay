@@ -124,10 +124,10 @@ class Timer(object):
         self.start = None
 
     def __enter__(self):
-        self.start = time.clock()
+        self.start = time.time()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        now = time.clock()
+        now = time.time()
         elapsed_ms = ((now - self.start) * 1000.0)
         timing(self.key, elapsed_ms)
 

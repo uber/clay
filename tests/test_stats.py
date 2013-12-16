@@ -52,6 +52,7 @@ class TestStats(unittest.TestCase):
             pass
         line = mockserver.readline()
         self.assertNotEqual(re.match('^foo:[0-9\.]+|ms$', line), None)
+        self.assertNotEqual(line.split('|', 1)[0].split(':', 1)[1], '0.000000')
 
     def test_count(self):
         stats.count('foo', 1)
