@@ -1,3 +1,9 @@
+clay (2.1.2) unstable; urgency=low
+
+  * Use time.time for stats timer context manager
+
+ -- Jeremy Grosser <jeremy@synack.me>  Sat, 16 Dec 2013 15:31:01 -0700
+
 clay (2.1.1) unstable; urgency=low
 
   * Added features to clay.stats
