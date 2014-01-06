@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.8" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
 <title>Clay Framework</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,14 +87,10 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-.monospaced, code, pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
-  color: navy;
+pre {
   padding: 0;
   margin: 0;
 }
-
 
 #author {
   color: #527bbd;
@@ -353,7 +349,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -411,13 +407,17 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
-div.unbreakable { page-break-inside: avoid; }
-
 
 /*
  * xhtml11 specific
  *
  * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -451,6 +451,12 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -531,8 +537,6 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
-
-
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -577,7 +581,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -606,7 +610,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div'
+    if (entry.nodeName == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -652,7 +656,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -733,9 +737,9 @@ asciidoc.install(2);
 <div id="header">
 <h1>Clay Framework</h1>
 <span id="author">Jeremy Grosser</span><br />
-<span id="email"><code>&lt;<a href="mailto:jeremy@uber.com">jeremy@uber.com</a>&gt;</code></span><br />
-<span id="revnumber">version 2.1.0,</span>
-<span id="revdate">2013-11-22</span>
+<span id="email"><tt>&lt;<a href="mailto:jeremy@uber.com">jeremy@uber.com</a>&gt;</tt></span><br />
+<span id="revnumber">version 2.1.3,</span>
+<span id="revdate">2014-01-06</span>
 <div id="toc">
   <div id="toctitle">Table of Contents</div>
   <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
@@ -776,17 +780,17 @@ http://www.gnu.org/software/src-highlite -->
 <div class="ulist"><ul>
 <li>
 <p>
-Every module starts with <code>from __future__ import absolute_import</code>, this is to prevent large projects from ending up with cyclical imports.
+Every module starts with <tt>from __future__ import absolute_import</tt>, this is to prevent large projects from ending up with cyclical imports.
 </p>
 </li>
 <li>
 <p>
-Along those same lines, wildcard imports like <code>from foo import *</code> should <strong>never</strong> be used. <strong>Always</strong> explicitly list the things you&#8217;re importing from a module.
+Along those same lines, wildcard imports like <tt>from foo import *</tt> should <strong>never</strong> be used. <strong>Always</strong> explicitly list the things you&#8217;re importing from a module.
 </p>
 </li>
 <li>
 <p>
-<code>from</code> imports should be avoided when practical. In the middle of a thousand-line file, it might not be obvious that <code>mail.send(...)</code> is really <code>clay.mail.send(...)</code> and not an instance of a local object.
+<tt>from</tt> imports should be avoided when practical. In the middle of a thousand-line file, it might not be obvious that <tt>mail.send(...)</tt> is really <tt>clay.mail.send(...)</tt> and not an instance of a local object.
 </p>
 </li>
 <li>
@@ -796,11 +800,11 @@ Keep reasonably close to PEP8 recommendations. Four space tabs, two newlines bet
 </li>
 <li>
 <p>
-Explicitly list the methods that a route responds to. We know that <code>app.route()</code> defaults to GET methods only, but this is not guaranteed to be the same in future versions of Flask/Clay.
+Explicitly list the methods that a route responds to. We know that <tt>app.route()</tt> defaults to GET methods only, but this is not guaranteed to be the same in future versions of Flask/Clay.
 </p>
 </li>
 </ul></div>
-<div class="paragraph"><p>Every Clay application needs a config. Clay configs are JSON files. The clay framework itself looks for a few config variables (TODO: see below). By default, we look for files listed in <code>$CLAY_CONFIG</code> delimited by colons <code>:</code> relative to the directory the development server runs from. Here&#8217;s a simple example.</p></div>
+<div class="paragraph"><p>Every Clay application needs a config. Clay configs are JSON files. The clay framework itself looks for a few config variables (TODO: see below). By default, we look for files listed in <tt>$CLAY_CONFIG</tt> delimited by colons <tt>:</tt> relative to the directory the development server runs from. Here&#8217;s a simple example.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
@@ -816,9 +820,9 @@ http://www.gnu.org/software/src-highlite -->
         <span style="color: #FF0000">}</span><span style="color: #990000">,</span>
         <span style="color: #FF0000">"views"</span><span style="color: #990000">:</span> <span style="color: #990000">[</span><span style="color: #FF0000">"helloworld"</span><span style="color: #990000">]</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
-<div class="paragraph"><p>This is the minimum configuration necessary to run the clay devserver. The first flask init section is the module name passed to the Flask app constructor. This is only used for uniquely identifying this application internally and has no bearing on anything important. It should follow the <a href="http://www.python.org/dev/peps/pep-0008/#package-and-module-names">naming rules</a> for Python modules. Here we use <code>helloworldapp</code> just to differentiate it from the name of our view module.</p></div>
+<div class="paragraph"><p>This is the minimum configuration necessary to run the clay devserver. The first flask init section is the module name passed to the Flask app constructor. This is only used for uniquely identifying this application internally and has no bearing on anything important. It should follow the <a href="http://www.python.org/dev/peps/pep-0008/#package-and-module-names">naming rules</a> for Python modules. Here we use <tt>helloworldapp</tt> just to differentiate it from the name of our view module.</p></div>
 <div class="paragraph"><p>The debug server section provides a host and port for the clay devserver to listen on. No magic here, just an IP and port. Use "0.0.0.0" for the host to listen on all interfaces.</p></div>
-<div class="paragraph"><p><code>views</code> is a list of modules to be loaded when the server starts up. This allows you to run multiple view modules simultaneously without having to manage a file with a list of routes or prefixes.</p></div>
+<div class="paragraph"><p><tt>views</tt> is a list of modules to be loaded when the server starts up. This allows you to run multiple view modules simultaneously without having to manage a file with a list of routes or prefixes.</p></div>
 <div class="paragraph"><p>Now that we&#8217;ve got a view module and a config, we can run the clay devserver&#8230;</p></div>
 </div>
 <div class="sect2">
@@ -830,12 +834,12 @@ http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">CLAY_CONFIG</span><span style="color: #990000">=.</span>/simple-clay<span style="color: #990000">.</span>conf
 clay-devserver</tt></pre></div></div>
-<div class="paragraph"><p><code>CLAY_CONFIG</code> is a colon delimited list of config files to be loaded, in order of precedence. For example, if <code>CLAY_CONFIG=./common.conf:./janky.conf</code>, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.</p></div>
+<div class="paragraph"><p><tt>CLAY_CONFIG</tt> is a colon delimited list of config files to be loaded, in order of precedence. For example, if <tt>CLAY_CONFIG=./common.conf:./janky.conf</tt>, the configuration dictionary from common.conf is loaded first, then update()'d with the dictionary from janky.conf.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_running_a_clay_service_in_production">Running a clay service in production</h3>
 <div class="paragraph"><p>Clay exposes itself as a standard WSGI application in the module
-clay.wsgi. The <code>CLAY_CONFIG</code> environment variable needs to be set.
+clay.wsgi. The <tt>CLAY_CONFIG</tt> environment variable needs to be set.
 All view modules listed in the config will be imported at startup.</p></div>
 <div class="listingblock">
 <div class="title">Running a production clay service with gunicorn</div>
@@ -853,21 +857,21 @@ gunicorn clay<span style="color: #990000">.</span>wsgi<span style="color: #99000
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_clay_config">clay.config</h3>
-<div class="paragraph"><p>The <code>clay.config</code> module provides a simple API for accessing
+<div class="paragraph"><p>The <tt>clay.config</tt> module provides a simple API for accessing
 configuration information. Internally, all Clay modules use this
 module to configure themselves.</p></div>
 <div class="paragraph"><p>Upon import, clay.config attempts to load it&#8217;s configuration from
-files listed in the <code>CLAY_CONFIG</code> environment variable, delimited by
+files listed in the <tt>CLAY_CONFIG</tt> environment variable, delimited by
 colons. Each file&#8217;s name is examined for a known file extension and
 parsed by the appropriate deserializer. Currently json is supported
 using the standard library and yaml is supported if PyYAML is
 installed. As each file is parsed, it is applied to the global config
-with <code>dict.update()</code>.</p></div>
-<div class="paragraph"><p>This module registers itself as a handler for SIGHUP and will attempt to reload it&#8217;s configuration upon receiving that signal. The configuration may also be reloaded on demand by calling <code>config.load()</code>.</p></div>
+with <tt>dict.update()</tt>.</p></div>
+<div class="paragraph"><p>This module registers itself as a handler for SIGHUP and will attempt to reload it&#8217;s configuration upon receiving that signal. The configuration may also be reloaded on demand by calling <tt>config.load()</tt>.</p></div>
 <div class="paragraph"><p>Several methods are exposed at the top level of the clay.config module and are intended to provide the config&#8217;s public API.</p></div>
 <div class="sect3">
 <h4 id="_clay_config_get_key_default_none">clay.config.get(key, default=None)</h4>
-<div class="paragraph"><p><code>key</code> is a period <code>.</code> delimited string that is recursively searched for a configuration option with that name. If this lookup fails at any level of the config hierarchy, the value of <code>default</code> is returned. For example, you can expect the following behavior for the given config.</p></div>
+<div class="paragraph"><p><tt>key</tt> is a period <tt>.</tt> delimited string that is recursively searched for a configuration option with that name. If this lookup fails at any level of the config hierarchy, the value of <tt>default</tt> is returned. For example, you can expect the following behavior for the given config.</p></div>
 <div class="listingblock">
 <div class="title">Example configuration</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -896,7 +900,7 @@ True</tt></pre></div></div>
 </div>
 <div class="sect3">
 <h4 id="_clay_config_get_logger_name">clay.config.get_logger(name)</h4>
-<div class="paragraph"><p>Returns a pre-configured <code>logging.Logger</code> instance identified by the given name. Depending on the framework&#8217;s environment, this logger may format and emit messages in different ways. In development, messages will be routed to the console whereas in production they might be routed to an aggregate endpoint or archive.</p></div>
+<div class="paragraph"><p>Returns a pre-configured <tt>logging.Logger</tt> instance identified by the given name. Depending on the framework&#8217;s environment, this logger may format and emit messages in different ways. In development, messages will be routed to the console whereas in production they might be routed to an aggregate endpoint or archive.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
@@ -910,11 +914,11 @@ myservice DEBUG Now we know what's happening<span style="color: #990000">!</span
 <div class="sect3">
 <h4 id="_clay_config_debug">clay.config.debug()</h4>
 <div class="paragraph"><p>DEPRECATED, will be removed in a future release. Use
-<code>clay.config.get('debug.enabled', False)</code> instead.</p></div>
+<tt>clay.config.get('debug.enabled', False)</tt> instead.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clay_config_feature_flag_name">clay.config.feature_flag(name)</h4>
-<div class="paragraph"><p>Similar to <code>clay.config.get</code>, feature_flag is specific to things with boolean values that enable or disable functionality within your service. This method returns True if the given feature is enabled, False otherwise.</p></div>
+<div class="paragraph"><p>Similar to <tt>clay.config.get</tt>, feature_flag is specific to things with boolean values that enable or disable functionality within your service. This method returns True if the given feature is enabled, False otherwise.</p></div>
 <div class="listingblock">
 <div class="title">Example configuration</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -932,7 +936,7 @@ http://www.gnu.org/software/src-highlite -->
         <span style="color: #FF0000">}</span>
     <span style="color: #FF0000">}</span>
 <span style="color: #FF0000">}</span></tt></pre></div></div>
-<div class="paragraph"><p>In the example above, <code>feature_flag('new_shiny_bits')</code> would return True and <code>feature_flag('new_scary_thing')</code> will only return True 10% of the time. The percent option is useful for A/B testing new features or slowly rolling out a feature for a subset of requests to gauge performance.</p></div>
+<div class="paragraph"><p>In the example above, <tt>feature_flag('new_shiny_bits')</tt> would return True and <tt>feature_flag('new_scary_thing')</tt> will only return True 10% of the time. The percent option is useful for A/B testing new features or slowly rolling out a feature for a subset of requests to gauge performance.</p></div>
 </div>
 <div class="sect3">
 <h4 id="_clay_config_load">clay.config.load()</h4>
@@ -943,9 +947,9 @@ http://www.gnu.org/software/src-highlite -->
 <h3 id="_clay_mail">clay.mail</h3>
 <div class="sect3">
 <h4 id="_clay_mail_sendmail_mailto_subject_message_subtype_em_html_em_charset_em_utf_8_em_headers">clay.mail.sendmail(mailto, subject, message, subtype=<em>html</em>, charset=<em>utf-8</em>, **headers)</h4>
-<div class="paragraph"><p>Sends an email to the given address using the server/credentials specified in the config under <code>smtp</code>.</p></div>
+<div class="paragraph"><p>Sends an email to the given address using the server/credentials specified in the config under <tt>smtp</tt>.</p></div>
 <div class="paragraph"><p>Additional SMTP headers may be set as keyword arguments, the values of which are expected to be either a subclass of basestring or an iterable of basestrings.</p></div>
-<div class="paragraph"><p>By default the From address is populated by the <code>smtp.from</code> config option. This may be overridden by passing a <code>From</code> kwarg.</p></div>
+<div class="paragraph"><p>By default the From address is populated by the <tt>smtp.from</tt> config option. This may be overridden by passing a <tt>From</tt> kwarg.</p></div>
 <div class="listingblock">
 <div class="title">Mail configuration</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -1005,7 +1009,7 @@ response <span style="color: #990000">=</span> http<span style="color: #990000">
 <div class="paragraph"><p>Decorator that adds a Cache-Control header to the response of a view
 function. Each keyword argument to this decorator is appended to the
 Cache-Control value, delimited by a comma. The key of each argument
-has any underscore <code>_</code> characters replaced with dash <code>-</code>.</p></div>
+has any underscore <tt>_</tt> characters replaced with dash <tt>-</tt>.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
@@ -1019,8 +1023,8 @@ http://www.gnu.org/software/src-highlite -->
   <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="color: #FF0000">'Hi!'</span></tt></pre></div></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>HTTP/1.1 200 OK
-Cache-Control: max-age=3600, public</code></pre>
+<pre><tt>HTTP/1.1 200 OK
+Cache-Control: max-age=3600, public</tt></pre>
 </div></div>
 </div>
 </div>
@@ -1110,7 +1114,7 @@ http://www.gnu.org/software/src-highlite -->
 <h3 id="_clay_docs">clay.docs</h3>
 <div class="paragraph"><p>This module is not meant to be imported by an application, rather it
 can be added to the views list in your app&#8217;s configuration to provide
-a <code>GET /_docs</code> endpoint that parses the docstrings of all registered
+a <tt>GET /_docs</tt> endpoint that parses the docstrings of all registered
 routes and returns a JSON representation of your API&#8217;s documentation.</p></div>
 <div class="sect3">
 <h4 id="_docstring_format">Docstring Format</h4>
@@ -1123,13 +1127,13 @@ httpdomain (<a href="http://pythonhosted.org/sphinxcontrib-httpdomain/">http://p
 a human readable description of the endpoint less than 72 characters
 long. Lines following the short doc are a longer human readable
 description of the endpoint&#8217;s behavior.</p></div>
-<div class="paragraph"><p>Any line beginning with a <code>:</code> character is split on <code>:</code> and assumed to
+<div class="paragraph"><p>Any line beginning with a <tt>:</tt> character is split on <tt>:</tt> and assumed to
 expand to a tuple of (directive, key, value).</p></div>
-<div class="paragraph"><p>Within the value of a directive, if an opening <code>{</code> and closing <code>}</code>
+<div class="paragraph"><p>Within the value of a directive, if an opening <tt>{</tt> and closing <tt>}</tt>
 brace are detected, the substring within the braces is parsed as a
 JSON hash with additional metadata about this parameter. Currently
 this is only used for specifying which parameters are required.</p></div>
-<div class="paragraph"><p>The <code>:rtype:</code> directive is special, it does not require a key but
+<div class="paragraph"><p>The <tt>:rtype:</tt> directive is special, it does not require a key but
 references a dict object by import name. This dict defines the fields
 of a JSON response body in a format defined in JSON-Schema format
 utilized by swagger.  (<a href="http://json-schema.org/">http://json-schema.org/</a>)
@@ -1197,12 +1201,12 @@ SearchResult <span style="color: #990000">=</span> <span style="color: #990000">
 <div class="paragraph"><p>Defines a query string argument.</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:query &lt;argname&gt;: &lt;description&gt;
+<pre><tt>:query &lt;argname&gt;: &lt;description&gt;
 
 Example:
 GET /foo?bar=baz
 
-:query bar: You might specify something like baz</code></pre>
+:query bar: You might specify something like baz</tt></pre>
 </div></div>
 </div>
 <div class="sect4">
@@ -1210,7 +1214,7 @@ GET /foo?bar=baz
 <div class="paragraph"><p>Defines a POST application/x-www-form-urlencoded field</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:form &lt;argname&gt;: &lt;description&gt;
+<pre><tt>:form &lt;argname&gt;: &lt;description&gt;
 
 Example:
 POST /foo
@@ -1218,7 +1222,7 @@ Content-type: application/x-www-form-urlencoded
 
 bar=baz
 
-:form bar: You might specify something like baz</code></pre>
+:form bar: You might specify something like baz</tt></pre>
 </div></div>
 </div>
 <div class="sect4">
@@ -1228,7 +1232,7 @@ the body structure are not defined. In most cases, this will provide a
 reference to a JSON hash key.</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:body &lt;argname&gt;: &lt;description&gt;
+<pre><tt>:body &lt;argname&gt;: &lt;description&gt;
 
 Example:
 POST /foo
@@ -1236,7 +1240,7 @@ Content-type: application/json
 
 {"bar": "baz"}
 
-:body bar: You might specify something like baz</code></pre>
+:body bar: You might specify something like baz</tt></pre>
 </div></div>
 </div>
 <div class="sect4">
@@ -1244,7 +1248,7 @@ Content-type: application/json
 <div class="paragraph"><p>Defines a URL path part in reference to the view&#8217;s route.</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:path &lt;argname&gt;: &lt;description&gt;
+<pre><tt>:path &lt;argname&gt;: &lt;description&gt;
 
 Example:
 @app.route('/foo/&lt;bar&gt;', methods=['GET'])
@@ -1253,7 +1257,7 @@ def foo(bar):
 
 GET /foo/baz
 
-:path bar: You might specify something like baz</code></pre>
+:path bar: You might specify something like baz</tt></pre>
 </div></div>
 </div>
 <div class="sect4">
@@ -1261,13 +1265,13 @@ GET /foo/baz
 <div class="paragraph"><p>Defines an HTTP request header.</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:reqheader &lt;header&gt;: &lt;description&gt;
+<pre><tt>:reqheader &lt;header&gt;: &lt;description&gt;
 
 Example:
 POST /foo
 Authorization: OAuth token="123456"
 
-:reqheader Authorization: Contains the authorization method, followed by a space delimited list of arguments identifying the requester</code></pre>
+:reqheader Authorization: Contains the authorization method, followed by a space delimited list of arguments identifying the requester</tt></pre>
 </div></div>
 </div>
 </div>
@@ -1276,10 +1280,10 @@ Authorization: OAuth token="123456"
 <div class="paragraph"><p>(<a href="https://github.com/wordnik/swagger-core/wiki/Parameters">https://github.com/wordnik/swagger-core/wiki/Parameters</a>)</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>:query &lt;argname&gt;: &lt;description&gt;
+<pre><tt>:query &lt;argname&gt;: &lt;description&gt;
 
 Example:
-:query foo: Does foo like things {"required": true}</code></pre>
+:query foo: Does foo like things {"required": true}</tt></pre>
 </div></div>
 </div>
 </div>
@@ -1348,7 +1352,7 @@ http://www.gnu.org/software/src-highlite -->
         <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
 </tt></pre></div></div>
 <div class="paragraph"><p>Finally, you can specify an attribute on a test with a dictionary of clay.config keys
-and values to be applied to each test (in the example below, it&#8217;s <code>test_config</code>), as
+and values to be applied to each test (in the example below, it&#8217;s <tt>test_config</tt>), as
 well as a utility function so that the configuration can be manipulated for a single test:</p></div>
 <div class="listingblock">
 <div class="title">Customizable Unittest</div>
@@ -1443,7 +1447,7 @@ http://www.gnu.org/software/src-highlite -->
 Adding this to the setup_package() method in the project&#8217;s test/<em>init</em>.py accomplishes this when using nosetests.
 The following is an example from Uber&#8217;s Cerebro project:</p></div>
 <div class="listingblock">
-<div class="title"><code>test/__init__.py</code></div>
+<div class="title"><tt>test/__init__.py</tt></div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -1484,7 +1488,7 @@ http://www.gnu.org/software/src-highlite -->
 
 <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">teardown_package</span></span><span style="color: #990000">():</span>
     <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span></tt></pre></div></div>
-<div class="paragraph"><p>Once the fixtures have been loaded, add charlatan&#8217;s FixturesManagerMixin to your testcase to allow each test to access and manipulate fixtures. Generally, it saves time if each test can optionally specify a list of fixtures to be installed before each test; adding a few lines to <code>_pre_setup</code> takes care of the installation.</p></div>
+<div class="paragraph"><p>Once the fixtures have been loaded, add charlatan&#8217;s FixturesManagerMixin to your testcase to allow each test to access and manipulate fixtures. Generally, it saves time if each test can optionally specify a list of fixtures to be installed before each test; adding a few lines to <tt>_pre_setup</tt> takes care of the installation.</p></div>
 <div class="listingblock">
 <div class="title">Fixture Test</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -1569,7 +1573,7 @@ http://www.gnu.org/software/src-highlite -->
 </div>
 <div class="sect2">
 <h3 id="_testing_with_clay_providing_a_clean_test_database_for_each_test">Testing with Clay: Providing a clean test database for each test</h3>
-<div class="paragraph"><p>When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy&#8217;s <a href="http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session"><code>scoped_session</code></a> to accopmlish this goal.</p></div>
+<div class="paragraph"><p>When testing, its wise to provide each test with a database containing the correct schema, but no actual data, allowing each test to manipulate the database as necessary. This pattern involves leveraging the transaction capability of sqlalchemy&#8217;s <a href="http://docs.sqlalchemy.org/en/latest/orm/session.html#sqlalchemy.orm.scoping.scoped_session"><tt>scoped_session</tt></a> to accopmlish this goal.</p></div>
 <div class="paragraph"><p>First, add a sqlalchemy configuration for your test database to clay&#8217;s configuration file:</p></div>
 <div class="listingblock">
 <div class="title">Test database configuration</div>
@@ -1588,7 +1592,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="paragraph"><p>Then, have the engine start when the test package is started by adding to the setup_package() function started here. The following is an example from Uber&#8217;s Cerebro project:</p></div>
 <div class="listingblock">
-<div class="title"><code>test/__init__.py</code> with Test Database Engine</div>
+<div class="title"><tt>test/__init__.py</tt> with Test Database Engine</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -1647,7 +1651,7 @@ test_engine <span style="color: #990000">=</span> None
 <span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">teardown_package</span></span><span style="color: #990000">():</span>
     <span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
 </tt></pre></div></div>
-<div class="paragraph"><p>Each test will open its own connection and transaction with the database, and as part of the teardown the entire transaction will be rolled back, effectively giving each test its own copy of the database to interact with. Continuing to add to our base CerebroTestCase class, we add this logic in the <code>_pre_setup</code> and <code>post_teardown</code> methods:</p></div>
+<div class="paragraph"><p>Each test will open its own connection and transaction with the database, and as part of the teardown the entire transaction will be rolled back, effectively giving each test its own copy of the database to interact with. Continuing to add to our base CerebroTestCase class, we add this logic in the <tt>_pre_setup</tt> and <tt>post_teardown</tt> methods:</p></div>
 <div class="listingblock">
 <div class="title">Test Database Test</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -1735,40 +1739,40 @@ version will be incremented for bugfix releases.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_clay_environment_is_deprecated">CLAY_ENVIRONMENT is deprecated</h3>
-<div class="paragraph"><p>The <code>CLAY_ENVIRONMENT</code> variable should no longer be used to
+<div class="paragraph"><p>The <tt>CLAY_ENVIRONMENT</tt> variable should no longer be used to
 differentiate production and development environments, but you should
-rather use separate files passed to <code>CLAY_CONFIG</code> for this purpose.</p></div>
+rather use separate files passed to <tt>CLAY_CONFIG</tt> for this purpose.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_debug_flags_are_no_longer_environment_based">Debug flags are no longer environment based</h3>
-<div class="paragraph"><p>In previous releases, if <code>CLAY_ENVIRONMENT=development</code> was specified,
+<div class="paragraph"><p>In previous releases, if <tt>CLAY_ENVIRONMENT=development</tt> was specified,
 logging and devserver configuration behaved differently. This check
-has been replaced with the <code>debug.enabled</code> boolean flag, which
+has been replaced with the <tt>debug.enabled</tt> boolean flag, which
 defaults to false. You will generally want this enabled in your
 development configuration.</p></div>
-<div class="paragraph"><p>An additional <code>debug.logging</code> boolean has been added that sets the
+<div class="paragraph"><p>An additional <tt>debug.logging</tt> boolean has been added that sets the
 default log level of logger instances returned from
-<code>clay.config.get_logger()</code> to DEBUG, rather than INFO.</p></div>
+<tt>clay.config.get_logger()</tt> to DEBUG, rather than INFO.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_default_logging_configuration">Default logging configuration</h3>
 <div class="paragraph"><p>Clay now supports arbitrary logging configuration by setting a
-<code>logging</code> key in your configuration, with contents adhering to the
+<tt>logging</tt> key in your configuration, with contents adhering to the
 <a href="http://docs.python.org/2/library/logging.config.html#logging-config-dictschema">dictConfig
 schema</a> specified by the Python standard library.</p></div>
-<div class="paragraph"><p>If no <code>logging</code> element is found in your configuration, Clay will
+<div class="paragraph"><p>If no <tt>logging</tt> element is found in your configuration, Clay will
 default to logging all messages to stderr at the WARNING level or
 above.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_remote_logging_is_not_automatic">Remote logging is not automatic</h3>
-<div class="paragraph"><p>In previous releases, if <code>logging.host</code> were specified in the config,
-a <code>clay.logger.UDPHandler</code> was initialized and all log messages were
+<div class="paragraph"><p>In previous releases, if <tt>logging.host</tt> were specified in the config,
+a <tt>clay.logger.UDPHandler</tt> was initialized and all log messages were
 directed to that host. This option is no longer available, and the
 UDPHandler must be initialized using a dictConfig.</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>logging:
+<pre><tt>logging:
   version: 1
   handlers:
     remote:
@@ -1779,18 +1783,18 @@ UDPHandler must be initialized using a dictConfig.</p></div>
   loggers:
     root:
       level: DEBUG
-      handlers: remote</code></pre>
+      handlers: remote</tt></pre>
 </div></div>
 </div>
 <div class="sect2">
 <h3 id="_flask_init_is_no_longer_required">flask.init is no longer required</h3>
-<div class="paragraph"><p>The <code>flask.init.import_name</code> configuration option is now optional. If
-not specified, the import_name defaults to <code>clayapp</code>.</p></div>
+<div class="paragraph"><p>The <tt>flask.init.import_name</tt> configuration option is now optional. If
+not specified, the import_name defaults to <tt>clayapp</tt>.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_clay_now_includes_unit_tests">Clay now includes unit tests</h3>
 <div class="paragraph"><p>The clay framework now has internal tests that may be run with
-<code>python setup.py test</code>. These tests are contained in the tests/
+<tt>python setup.py test</tt>. These tests are contained in the tests/
 directory at the top level of the project and utilize the
 (<a href="http://webtest.pythonpaste.org/en/latest/index.html)">webtest
 library</a>.</p></div>
@@ -1801,8 +1805,8 @@ library</a>.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1.0<br />
-Last updated 2013-11-22 16:46:24 PST
+Version 2.1.3<br />
+Last updated 2014-01-06 20:16:11 UTC
 </div>
 </div>
 </body>
