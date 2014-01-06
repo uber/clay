@@ -1,3 +1,9 @@
+clay (2.1.3) unstable; urgency=low
+
+  * Merge stats backoff
+
+ -- Jeremy Grosser <jeremy@synack.me>  Mon,  6 Jan 2014 12:15:01 -0700
+
 clay (2.1.2) unstable; urgency=low
 
   * Use time.time for stats timer context manager
