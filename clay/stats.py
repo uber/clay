@@ -24,11 +24,11 @@ class StatsConnection(object):
 
     def __str__(self):
         if self.sock is not None:
-            return 'StatsConnection %s %s:%i (connected)' % (
-                   self.proto, self.host, self.port)
+            return '%s %s %s:%i (connected)' % (
+                self.__class__.__name__, self.proto, self.host, self.port)
         else:
-            return 'StatsConnection %s %s:%i (not connected)' % (
-                   self.proto, self.host, self.port)
+            return '%s %s %s:%i (not connected)' % (
+                self.__class__.__name__, self.proto, self.host, self.port)
 
     def get_socket(self):
         '''
@@ -109,7 +109,7 @@ class StatsConnection(object):
         proto, sock = self.get_socket()
         if sock is None:
             return False
-        
+
         if not stat.endswith('\n'):
             stat += '\n'
 
@@ -128,6 +128,45 @@ class StatsConnection(object):
 
 connection = StatsConnection()
 send = connection.send  # backwards compatibility
+
+
+class BulkStatsConnection(StatsConnection):
+    """An interface for bulk sending of stats.
+
+    The intended usage is like this:
+
+    conn = BulkStatsConnection('my.crazy.thing')
+    conn.add('foo:1|g')
+    conn.add('bar:2|c')
+    conn.add('baz:3|ms')
+    conn.send_all()
+
+    This will send stats keyed as my.crazy.thing.foo,
+    my.crazy.thing.bar, and my.crazy.thing.baz all in a single request
+    to statsd.
+    """
+
+    def __init__(self, stats_prefix):
+        super(BulkStatsConnection, self).__init__()
+        self.stats_prefix = stats_prefix
+        self.pending_stats = []
+
+    def add(self, stat, prefix_override=None):
+        """Add a new pending stat.
+
+        The stat will be prefixed with self.stats_prefix or the
+        prefix_override if that is supplied. The stat will not be sent
+        until send_all() is called.
+        """
+        prefix = (prefix_override or self.stats_prefix).rstrip('.')
+        stat_value = '%s.%s' % (prefix, stat.lstrip('.'))
+        self.pending_stats.append(stat_value)
+
+    def send_all(self):
+        """Send all pending stats."""
+        aggregated_value = '\n'.join(self.pending_stats)
+        self.send(aggregated_value)
+        del self.pending_stats[:]
 
 
 class Timer(object):
