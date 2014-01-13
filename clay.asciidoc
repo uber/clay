@@ -1,7 +1,7 @@
 Clay Framework
 ==============
 Jeremy Grosser <jeremy@uber.com>
-v2.1.3, 2014-01-06
+v2.1.4, 2014-01-06
 :toc:
 
 Clay is a framework for building RESTful backend services using best practices. It's a wrapper around Flask (http://flask.pocoo.org) along with several convenient, standardized, performance enhanced ways of performing common tasks like sending email and connecting to a database. Clay is available under the MIT License.

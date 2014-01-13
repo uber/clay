@@ -9,7 +9,7 @@ util = util  # make pyflakes/etc happy
 
 setup(
     name='clay-flask',
-    version='2.1.3',
+    version='2.1.4',
     author='Jeremy Grosser',
     author_email='jeremy@uber.com',
     packages=['clay'],
