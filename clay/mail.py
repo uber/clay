@@ -53,7 +53,7 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **header
         del msg['BCC']
 
     smtp = smtplib.SMTP(config.get('smtp.host'), config.get('smtp.port'))
-    if config.get('smtp.username') and config.get('smtp.password'):
+    if config.get('smtp.username', None) is not None and config.get('smtp.password', None) is not None:
         smtp.login(config.get('smtp.username'), config.get('smtp.password'))
     smtp.sendmail(mailfrom, recipients, msg.as_string())
     smtp.quit()
