@@ -15,5 +15,19 @@
     "protocol": "tcp",
     "host": "127.0.0.1",
     "port": 8125
+  },
+  "smtp": {
+    "host": "testhost",
+    "port": 2525,
+    "username": "testusername",
+    "password": "testpassword",
+    "from": "testfrom"
+  },
+  "othersmtp": {
+    "host": "otherhost",
+    "port": 2525,
+    "username": "otherusername",
+    "password": "otherpassword",
+    "from": "otherfrom"
   }
 }
