@@ -45,6 +45,9 @@ class StatsConnection(object):
         self.host = config.get('statsd.host', None)
         self.port = config.get('statsd.port', 8125)
 
+        if self.host is None or self.port is None:
+            return None, None
+
         if (self.next_retry is not None) and (self.next_retry > time.time()):
             return
 
@@ -109,7 +112,7 @@ class StatsConnection(object):
         proto, sock = self.get_socket()
         if sock is None:
             return False
-        
+
         if not stat.endswith('\n'):
             stat += '\n'
 
