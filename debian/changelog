@@ -1,3 +1,11 @@
+clay (2.1.5) unstable; urgency=low
+
+  * Allow custom smtpconfig
+  * Fix stats.send when statsd.host is none
+  * Fix pyflakes warnings
+
+ -- Jeremy Grosser <jeremy@synack.me>  Thu, 30 Jan 2014 17:13:01 -0700
+
 clay (2.1.4) unstable; urgency=low
 
   * Fix mail auth bug
