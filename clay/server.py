@@ -21,7 +21,7 @@ def load_middleware(app, name, mwconfig):
             log.error('No callable named %s in %s (%r)' % (wsgi, modulename, mw))
         else:
             app = mw(app, **mwconfig)
-    except Exception, e:
+    except Exception:
         log.exception('Unable to load WSGI middleware %s' % name)
     return app
 
@@ -44,7 +44,7 @@ def devserver():
 
     for modulename in config.get('views'):
         log.debug('Loading views from %s' % modulename)
-        module = __import__(modulename)
+        __import__(modulename)
 
     conf = config.get('debug.server')
     log.warning('DEVELOPMENT MODE')

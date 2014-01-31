@@ -10,8 +10,6 @@ import os.path
 import os
 import sys
 
-from clay import logger
-
 
 SERIALIZERS = {'json': json}
 

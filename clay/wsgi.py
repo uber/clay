@@ -10,4 +10,4 @@ if not views:
 
 for modulename in views:
     log.debug('Loading views from %s' % modulename)
-    module = __import__(modulename)
+    __import__(modulename)
