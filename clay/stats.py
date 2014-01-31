@@ -46,7 +46,7 @@ class StatsConnection(object):
         self.port = config.get('statsd.port', 8125)
 
         if self.host is None or self.port is None:
-            return None, None
+            return (self.proto, None)
 
         if (self.next_retry is not None) and (self.next_retry > time.time()):
             return
