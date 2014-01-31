@@ -20,11 +20,16 @@ def _string_or_list(obj):
         return obj
 
 
-def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **headers):
+def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconfig=None, **headers):
     '''
     Send an email to the given address. Additional SMTP headers may be specified
     as keyword arguments.
     '''
+
+    if not smtpconfig:
+        # we support both smtp and mail for legacy reasons
+        # smtp is the correct usage.
+        smtpconfig = config.get('smtp') or config.get('mail')
 
     # mailto arg is explicit to ensure that it's always set, but it's processed
     # mostly the same way as all other headers
@@ -40,9 +45,7 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **header
     msg.attach(text)
 
     if not 'From' in msg:
-        # we support both smtp.from and mail.from for legacy reasons
-        # smtp.from is the correct usage.
-        msg['From'] = config.get('smtp.from') or config.get('mail.from')
+        msg['From'] = smtpconfig.get('from')
     mailfrom = msg['From']
     assert isinstance(mailfrom, basestring)
 
@@ -52,9 +55,9 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', **header
     if 'BCC' in msg:
         del msg['BCC']
 
-    smtp = smtplib.SMTP(config.get('smtp.host'), config.get('smtp.port'))
-    if config.get('smtp.username', None) is not None and config.get('smtp.password', None) is not None:
-        smtp.login(config.get('smtp.username'), config.get('smtp.password'))
+    smtp = smtplib.SMTP(smtpconfig.get('host'), smtpconfig.get('port'))
+    if smtpconfig.get('username', None) is not None and smtpconfig.get('password', None) is not None:
+        smtp.login(smtpconfig.get('username'), smtpconfig.get('password'))
     smtp.sendmail(mailfrom, recipients, msg.as_string())
     smtp.quit()
     log.info('Sent email to %s (Subject: %s)', recipients, subject)
