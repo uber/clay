@@ -518,7 +518,7 @@ class CerebroTestCase(unittest.TestCase):
 
         # Patch config dictionary so tests can customize in setUp but also
         # in the test function itself.
-        with mock.patch.object(clay.config.CONFIG, "config", self._config_copy):
+        with mock.patch.object(clay.config.CONFIG, "config", self.config_copy):
             unittest.TestCase.__call__(self, result)
 
         # Do post-test stuff
