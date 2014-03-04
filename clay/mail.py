@@ -1,5 +1,7 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import Encoders
 import smtplib
 
 from clay import config
@@ -20,7 +22,8 @@ def _string_or_list(obj):
         return obj
 
 
-def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconfig=None, **headers):
+def sendmail(mailto, subject, message, subtype='html', charset='utf-8',
+             smtpconfig=None, attachments={}, use_starttls=False, **headers):
     '''
     Send an email to the given address. Additional SMTP headers may be specified
     as keyword arguments.
@@ -44,6 +47,17 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconf
     text = MIMEText(message, subtype, charset)
     msg.attach(text)
 
+    # Add attachments
+    for file_name, file_payload in attachments.items():
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(file_payload.encode(charset))
+        Encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            'attachment; filename="%s"' % file_name
+        )
+        msg.attach(part)
+
     if not 'From' in msg:
         msg['From'] = smtpconfig.get('from')
     mailfrom = msg['From']
@@ -57,6 +71,10 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconf
 
     smtp = smtplib.SMTP(smtpconfig.get('host'), smtpconfig.get('port'))
     if smtpconfig.get('username', None) is not None and smtpconfig.get('password', None) is not None:
+        if use_starttls:
+            smtp.elho()
+            smtp.starttls()
+            smtp.elho()
         smtp.login(smtpconfig.get('username'), smtpconfig.get('password'))
     smtp.sendmail(mailfrom, recipients, msg.as_string())
     smtp.quit()
