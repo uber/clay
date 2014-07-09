@@ -49,7 +49,7 @@ class StatsConnection(object):
             return (self.proto, None)
 
         if (self.next_retry is not None) and (self.next_retry > time.time()):
-            return
+            return (self.proto, None)
 
         if proto == 'udp':
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
