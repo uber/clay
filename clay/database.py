@@ -15,7 +15,7 @@ class DatabaseContext(object):
         self.tlocal = threading.local()
         self.tlocal.dbconn = None
 
-        if not dbapi_name in ('psycopg2', 'MySQLdb', 'sqlite3'):
+        if dbapi_name not in ('psycopg2', 'MySQLdb', 'sqlite3'):
             raise NotImplementedError('Unsupported database module: %s' % dbapi_name)
         self.dbapi_name = dbapi_name
         self.dbapi = __import__(dbapi_name)
