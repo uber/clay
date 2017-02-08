@@ -212,28 +212,129 @@ def unique_set(key, value):
     return connection.send('%s:%s|s' % (key, value))
 
 
+def calls_wrapper(prefix, stat_key='calls'):
+    '''
+    Decorator that logs function entry statistics to statsd. With a prefix of
+    "example" and a stat_key of "calls", the following key would be created:
+
+        stats.counts.example.calls
+
+    :param prefix: Prefix for stats key to be created under
+    :type prefix: string
+    :param stat_key: Name of the key for the calls statistic
+    :type stat_key: string
+    '''
+
+    def wrapper(func):
+        func_key = prefix or func.__name__
+
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            count('%s.%s' % (func_key, stat_key), 1)
+            return func(*args, **kwargs)
+        return wrap
+    return wrapper
+
+
+def timing_wrapper(prefix, stat_key='duration'):
+    '''
+    Decorator that logs timing statistics to statsd. With a prefix of "example"
+    and a stat_key of "duration", the following key would be created:
+
+        stats.counts.example.duration
+
+    :param prefix: Prefix for stats key to be created under
+    :type prefix: string
+    :param stat_key: Name of the key for the duration statistic
+    :type stat_key: string
+    '''
+    def wrapper(func):
+        func_key = prefix or func.__name__
+
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            with Timer('%s.%s' % (prefix, stat_key)):
+                return func(*args, **kwargs)
+        return wrap
+    return wrapper
+
+
+def exceptions_wrapper(prefix, stat_key='exceptions'):
+    '''
+    Decorator that logs exception statistics to statsd. With a prefix of
+    "example" and a stat_key of "exceptions", the following key would be
+    created:
+
+        stats.counts.example.exceptions
+
+    :param prefix: Prefix for stats key to be created under
+    :type prefix: string
+    :param stat_key: Name of the key for the duration statistic
+    :type stat_key: string
+    '''
+    def wrapper(func):
+        func_key = prefix or func.__name__
+
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception:
+                count('%s.%s' % (func_key, stat_key), 1)
+                raise
+        return wrap
+    return wrapper
+
+
+def successes_wrapper(prefix, stat_key='successes'):
+    '''
+    Decorator that logs successful function completion statistics to statsd.
+    With a prefix of "example" and a stat_key of "successes", the following key
+    would be created:
+
+        stats.counts.example.successes
+
+    :param prefix: Prefix for stats key to be created under
+    :type prefix: string
+    :param stat_key: Name of the key for the duration statistic
+    :type stat_key: string
+    '''
+    def wrapper(func):
+        func_key = prefix or func.__name__
+
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            result = func(*args, **kwargs)
+            count('%s.%s' % (func_key, stat_key), 1)
+            return result
+        return wrap
+    return wrapper
+
+
+# Reimplemented in terms of new single-purpose wrappers for compatibility.
 def wrapper(prefix):
     '''
     Decorator that logs timing, call count, and exception count statistics to
     statsd. Given a prefix of "example", the following keys would be created:
+    would be created:
 
-    stats.counts.example.calls
-    stats.counts.example.exceptions
-    stats.timers.example.duration
+        stats.counts.example.calls
+        stats.counts.example.exceptions
+        stats.counts.example.duration
 
-    :param: prefix
-    :type key: Prefix for stats keys to be created under
+    :param prefix: Prefix for stats keys to be created under
+    :type prefix: string
     '''
 
     def clay_stats_wrapper(func):
-        @functools.wraps(func)
-        def wrap(*args, **kwargs):
-            count('%s.calls' % prefix, 1)
-            try:
-                with Timer('%s.duration' % prefix):
-                    return func(*args, **kwargs)
-            except Exception:
-                count('%s.exceptions' % prefix, 1)
-                raise
-        return wrap
+        # It'd be great to use the decorator syntax, but it only works when
+        # preceding an actual function declaration.
+        return functools.wraps(func)(
+            calls_wrapper(prefix)(
+                exceptions_wrapper(prefix)(
+                    timing_wrapper(prefix)(func)
+                )
+            )
+        )
+
     return clay_stats_wrapper

@@ -40,6 +40,7 @@ class MockTCPListener(object):
 socket.setdefaulttimeout(1.0)
 mockserver = MockTCPListener(config.get('statsd.host'), config.get('statsd.port', 8125))
 
+
 class TestStats(unittest.TestCase):
     def test_send(self):
         self.assertEqual(config.get('statsd.protocol'), 'tcp')
@@ -78,6 +79,48 @@ class TestStats(unittest.TestCase):
         stats.unique_set('foo', 'bar')
         line = mockserver.readline()
         self.assertEqual(line, 'foo:bar|s')
+
+    def test_calls_wrapper(self):
+        @stats.calls_wrapper('foo', 'called')
+        def foofunc(arg):
+            self.assertTrue(arg)
+            return arg
+
+        foofunc(True)
+        line = mockserver.readline()
+        self.assertEqual(line, 'foo.called:1|c')
+
+    def test_exceptions_wrapper(self):
+        @stats.exceptions_wrapper('foo', 'except')
+        def foofunc():
+            raise Exception()
+
+        try:
+            foofunc()
+        except:
+            pass
+
+        line = mockserver.readline()
+        self.assertEqual(line, 'foo.except:1|c')
+
+    def test_timing_wrapper(self):
+        @stats.timing_wrapper('foo', 'timing')
+        def foofunc(arg):
+            self.assertTrue(arg)
+            return arg
+
+        foofunc(True)
+        line = mockserver.readline()
+        self.assertTrue(re.match('^foo.timing:[0-9\.]+|ms$', line))
+
+    def test_successes_wrapper(self):
+        @stats.successes_wrapper('foo', 'success')
+        def foofunc(arg):
+            return arg
+
+        self.assertTrue(foofunc(True))
+        line = mockserver.readline()
+        self.assertEqual(line, 'foo.success:1|c')
 
     def test_wrapper(self):
         @stats.wrapper('foo')
