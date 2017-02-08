@@ -15,6 +15,17 @@ SERIALIZERS = {'json': json}
 
 try:
     import yaml
+
+    def environment_variable(loader, node):
+        '''
+        Parse "ENV_VAR, default" node values.
+        '''
+
+        env_var, default = loader.construct_scalar(node).split(' or ')
+        return os.environ.get(env_var) or default
+
+    yaml.SafeLoader.add_constructor(u'!env', environment_variable)
+
     SERIALIZERS['yaml'] = yaml
 except ImportError:
     pass
