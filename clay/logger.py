@@ -1,6 +1,10 @@
+import six
+
 from traceback import format_exc
 from datetime import datetime
-from Queue import Queue
+from six.moves import queue
+from queue import Queue
+
 import threading
 import logging
 import socket
