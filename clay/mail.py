@@ -1,6 +1,7 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+import six
 
 from clay import config
 
@@ -14,7 +15,7 @@ def _string_or_list(obj):
     further type checking is performed.
     '''
 
-    if isinstance(obj, basestring):
+    if isinstance(obj, six.string_types):
         return [obj]
     else:
         return obj
@@ -47,7 +48,7 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconf
     if not 'From' in msg:
         msg['From'] = smtpconfig.get('from')
     mailfrom = msg['From']
-    assert isinstance(mailfrom, basestring)
+    assert isinstance(mailfrom, six.string_types)
 
     recipients = []
     for toheader in ('To', 'CC', 'BCC'):

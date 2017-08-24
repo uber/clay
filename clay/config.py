@@ -41,7 +41,7 @@ class Configuration(object):
     def debug(self):
         '''
         Returns True if this server should use debug configuration and logging.
-        This method is deprecated and 
+        This method is deprecated and
         '''
         log = self.get_logger('clay.config')
         log.warning('Configuration.debug() is deprecated and may be removed in a future release of clay-flask. Please use config.get("debug.enabled", False) instead')
@@ -166,7 +166,7 @@ class FileConfiguration(Configuration):
                 raise ValueError('Empty config')
             log.info('Loaded configuration from %s' % filename)
             return config
-        except ValueError, e:
+        except ValueError as e:
             log.critical('Error loading config from %s: %s' %
                 (filename, str(e)))
             sys.exit(1)
