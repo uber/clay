@@ -9,6 +9,7 @@ import urllib2
 import urlparse
 import os.path
 import ssl
+import six
 
 from clay import config
 
@@ -71,7 +72,7 @@ def request(method, uri, headers={}, data=None, timeout=None):
                 headers=resp.headers,
                 data=resp.read())
             log.debug('%i %s %s' % (resp.status, method, uri))
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         # if there was a connection error, the underlying fd might be None and we can't read it
         if e.fp is not None:
             resp = Response(
@@ -109,7 +110,7 @@ def cache_control(**cache_options):
                 key = key.replace('_', '-')
                 if isinstance(value, bool):
                     cache_control.append(key)
-                elif isinstance(value, basestring):
+                elif isinstance(value, six.string_types):
                     cache_control.append('%s="%s"' % (key, value))
                 else:
                     cache_control.append('%s=%s' % (key, value))
