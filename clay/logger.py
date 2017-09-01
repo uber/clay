@@ -2,8 +2,7 @@ import six
 
 from traceback import format_exc
 from datetime import datetime
-from six.moves import queue
-from queue import Queue
+from six.moves.queue import Queue
 
 import threading
 import logging
