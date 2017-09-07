@@ -38,7 +38,7 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8', smtpconf
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    for key, value in headers.iteritems():
+    for key, value in six.iteritems(headers):
         for val in _string_or_list(value):
             msg.add_header(key, val)
 

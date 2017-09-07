@@ -106,7 +106,7 @@ def cache_control(**cache_options):
             response = make_response(f(*args, **kwargs))
 
             cache_control = []
-            for key, value in cache_options.iteritems():
+            for key, value in six.iteritems(cache_options):
                 key = key.replace('_', '-')
                 if isinstance(value, bool):
                     cache_control.append(key)

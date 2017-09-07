@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
-import sys
+import sys, six
 
 from flask import Flask
 import werkzeug.serving
@@ -33,7 +33,7 @@ app = Flask(**flask_init)
 app.debug = config.get('debug.enabled', False)
 app.config.update(config.get('flask.config', {}))
 application = app
-for name, mwconfig in config.get('middleware', {}).iteritems():
+for name, mwconfig in six.iteritems(config.get('middleware', {})):
     application = load_middleware(application, name, mwconfig)
 
 
