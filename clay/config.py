@@ -161,7 +161,7 @@ class FileConfiguration(Configuration):
             load = getattr(SERIALIZERS[filetype], "safe_load",
                            getattr(SERIALIZERS[filetype], "load"))
 
-            config = load(file(filename, 'r'))
+            config = load(open(filename, 'r'))
             if not config:
                 raise ValueError('Empty config')
             log.info('Loaded configuration from %s' % filename)
