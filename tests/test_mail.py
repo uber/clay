@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import mock
 import os
@@ -70,7 +70,7 @@ class TestMail(unittest.TestCase):
     @mock.patch('smtplib.SMTP')
     @mock.patch('email.mime.base.MIMEBase.set_payload')
     def test_sendmail_attachments(self, mock_set_payload, mock_SMTP):
-        """Test that whens sarttls is true, elho and starttls are called."""
+        """Test that whens starttls is true, elho and starttls are called."""
 
         mailto = 'otherfake@email.com'
         subject = 'This is another subject'
@@ -85,4 +85,4 @@ class TestMail(unittest.TestCase):
         )
 
         # set_payload should be called on the file content.
-        self.assertIn(file_content, [call[0][0] for call in mock_set_payload.call_args_list])
+        self.assertIn(file_content.encode('utf-8'), [call[0][0] for call in mock_set_payload.call_args_list])

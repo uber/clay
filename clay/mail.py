@@ -1,7 +1,8 @@
+from __future__ import unicode_literals
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
-from email import Encoders
+from email import encoders
 import smtplib
 import six
 
@@ -52,12 +53,13 @@ def sendmail(mailto, subject, message, subtype='html', charset='utf-8',
     for file_name, file_payload in attachments.items():
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(file_payload.encode(charset))
-        Encoders.encode_base64(part)
-        part.add_header(
-            'Content-Disposition',
-            'attachment; filename="%s"' % file_name
-        )
-        msg.attach(part)
+        if part.get_payload() is not None:
+            encoders.encode_base64(part)
+            part.add_header(
+                'Content-Disposition',
+                'attachment; filename="%s"' % file_name
+            )
+            msg.attach(part)
 
     if not 'From' in msg:
         msg['From'] = smtpconfig.get('from')
