@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import unittest
 import socket
@@ -26,10 +26,10 @@ class MockTCPListener(object):
             self.accepted, addr = self.sock.accept()
         while self.buf.find('\n') == -1:
             chunk = self.accepted.recv(1024)
-            self.buf += chunk
+            self.buf += chunk.decode()
         line, self.buf = self.buf.split('\n', 1)
         log.debug('mockserver.readline: %r' % line)
-        return line
+        return str(line)
 
     def close(self):
         if self.buf:
@@ -39,6 +39,7 @@ class MockTCPListener(object):
 
 socket.setdefaulttimeout(1.0)
 mockserver = MockTCPListener(config.get('statsd.host'), config.get('statsd.port', 8125))
+
 
 class TestStats(unittest.TestCase):
     def test_send(self):

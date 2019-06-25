@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import functools
 import socket
@@ -118,11 +118,11 @@ class StatsConnection(object):
 
         try:
             if proto == 'udp':
-                sock.sendto(stat, 0, (self.host, self.port))
+                sock.sendto(stat.encode('utf-8'), 0, (self.host, self.port))
                 return True
 
             if proto == 'tcp':
-                sock.sendall(stat)
+                sock.sendall(stat.encode('utf-8'))
                 return True
         except socket.error:
             log.exception('Unable to send to statsd, resetting socket')
