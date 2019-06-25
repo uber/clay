@@ -1,0 +1,7 @@
+flask
+pytest
+tox
+webtest
+mock
+future
+six
