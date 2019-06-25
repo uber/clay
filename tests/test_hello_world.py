@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 import webtest.lint
 import webtest
 import os
@@ -26,8 +26,11 @@ app = webtest.TestApp(app)
 def test_hello_world():
     res = app.get('/')
     assert res.status_int == 200
-    assert res.body == 'Hello, world!'
+    assert res.body == 'Hello, world!'.encode('utf-8')
+
 
 def test_cache_control():
     res = app.get('/')
-    assert res.headers['Cache-Control'] == 'max-age=3600, public, no-cache="Cookies"'
+    assert 'public' in res.headers['Cache-Control']
+    assert 'max-age=3600' in res.headers['Cache-Control']
+    assert 'no-cache="Cookies"' in res.headers['Cache-Control']
