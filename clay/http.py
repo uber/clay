@@ -1,15 +1,24 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from flask import make_response
 from collections import namedtuple
 import contextlib
 import functools
-import httplib
-import urllib2
-import urlparse
+import http.client
 import os.path
 import ssl
 import six
+
+try:
+    from urllib.parse import urlparse
+    from urllib.request import Request as urllib_Request
+    from urllib.request import HTTPSHandler, urlopen, install_opener, build_opener
+    from urllib.error import HTTPError, URLError
+except ImportError:
+    from urlparse import urlparse
+    from urllib2 import Request as urllib_Request
+    from urllib2 import urlopen, install_opener, build_opener, HTTPError, HTTPSHandler, URLError
+
 
 from clay import config
 
@@ -20,39 +29,66 @@ log = config.get_logger('clay.http')
 DEFAULT_CA_CERTS = '/etc/ssl/certs/ca-certificates.crt'
 
 
-class VerifiedHTTPSOpener(urllib2.HTTPSHandler):
+class VerifiedHTTPSOpener(HTTPSHandler):
     def https_open(self, req):
         ca_certs = config.get('http.ca_certs_file', DEFAULT_CA_CERTS)
         if config.get('http.verify_server_certificates', True) and os.path.exists(ca_certs):
-            frags = urlparse.urlparse(req.get_full_url())
+            frags = urlparse(req.get_full_url())
             ssl.get_server_certificate(
                 (frags.hostname, frags.port or 443),
                 ca_certs=ca_certs
             )
-        return self.do_open(httplib.HTTPSConnection, req)
-
-urllib2.install_opener(urllib2.build_opener(VerifiedHTTPSOpener))
+        return self.do_open(http.client.HTTPSConnection, req)
 
 
-class Request(urllib2.Request):
-    '''
-    This subclass adds "method" to urllib2.Request
-    '''
-    def __init__(self, url, data=None, headers={}, origin_req_host=None,
-                 unverifiable=False, method=None):
-        urllib2.Request.__init__(self, url, data, headers, origin_req_host,
-                                 unverifiable)
-        if headers is None:
-            self.headers = {}
-        self.method = method
+install_opener(build_opener(VerifiedHTTPSOpener))
 
-    def get_method(self):
-        if self.method is not None:
-            return self.method
-        if self.has_data():
-            return 'POST'
-        else:
-            return 'GET'
+if six.PY2:
+    class Request(urllib_Request):
+        '''
+        This subclass adds "method" to urllib2.Request
+        '''
+        def __init__(self, url, data=None, headers={}, origin_req_host=None,
+                     unverifiable=False, method=None):
+            urllib_Request.__init__(self, url, data, headers, origin_req_host,
+                                     unverifiable)
+            if headers is None:
+                self.headers = {}
+            self.method = method
+
+        def get_method(self):
+            if self.method is not None:
+                return self.method
+            if self.data is not None:
+                return 'POST'
+            else:
+                return 'GET'
+
+
+if six.PY3:
+    class Request(urllib_Request):
+        '''
+        This subclass adds "type" to urllib.request.Request
+        '''
+        def __init__(self, url, data=None, headers={}, origin_req_host=None,
+                     unverifiable=False, method=None):
+            urllib_Request.__init__(self, url, data, headers, origin_req_host,
+                                     unverifiable)
+            if headers is None:
+                self.headers = {}
+            self.method = method
+
+        def get_method(self):
+            if self.method is not None:
+                return self.method
+            if self.data is not None:
+                return 'POST'
+            else:
+                return 'GET'
+
+        def get_type(self):
+            if self.type is not None:
+                return self.type
 
 
 def request(method, uri, headers={}, data=None, timeout=None):
@@ -63,16 +99,16 @@ def request(method, uri, headers={}, data=None, timeout=None):
     '''
     req = Request(uri, headers=headers, data=data, method=method)
     if not req.get_type() in ('http', 'https'):
-        raise urllib2.URLError('Only http and https protocols are supported')
+        raise URLError('Only http and https protocols are supported')
 
     try:
-        with contextlib.closing(urllib2.urlopen(req, timeout=timeout)) as resp:
+        with contextlib.closing(urlopen(req, timeout=timeout)) as resp:
             resp = Response(
                 status=resp.getcode(),
                 headers=resp.headers,
                 data=resp.read())
             log.debug('%i %s %s' % (resp.status, method, uri))
-    except urllib2.HTTPError as e:
+    except HTTPError as e:
         # if there was a connection error, the underlying fd might be None and we can't read it
         if e.fp is not None:
             resp = Response(
