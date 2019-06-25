@@ -19,9 +19,13 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
+*.db
 
 #Translations
 *.mo
 
 #Mr Developer
 .mr.developer.cfg
+
+# Intellij
+.idea
