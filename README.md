@@ -7,3 +7,9 @@ Documentation is available at http://clayframework.com/
 
 Git repository: https://github.com/uber/clay.git
 Install via PyPI: pip install clay-flask
+
+# Developer instructions
+
+This repo utilizes tox and pytest to ensure compatibility with both python 2 and python 3.
+
+To run the tests simply call `tox` from the root directory of the repo

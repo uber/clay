@@ -6,6 +6,14 @@ from setuptools import setup
 from multiprocessing import util
 util = util  # make pyflakes/etc happy
 
+def read_long_description(filename="README.md"):
+    with open(filename) as f:
+        return f.read().strip()
+
+
+def requirements(filename="requirements.txt"):
+    with open(filename) as f:
+        return f.readlines()
 
 setup(
     name='clay-flask',
@@ -14,11 +22,9 @@ setup(
     author_email='jeremy@uber.com',
     packages=['clay'],
     description='Clay is a framework for building RESTful backend services using best practices.',
-    install_requires=[
-        'flask',
-    ],
+    install_requires=requirements(),
     tests_require=[
-        'nose',
+        'pytest',
         'webtest',
         'mock >= 1.0.0',
     ],
