@@ -52,7 +52,7 @@ def test_database_threads():
             cur.close()
 
     threads = []
-    for i in xrange(64):
+    for i in range(64):
         t = threading.Thread(target=dbthread, args=(i,))
         t.setDaemon(True)
         t.start()

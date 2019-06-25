@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from clay import config
 import threading
 import random
@@ -31,7 +32,7 @@ class DatabaseContext(object):
         self.tlocal.dbconn = None
 
         if exc_type is not None:
-            raise
+            raise Exception(exc_type + ': ' + exc_value)
     
     def __str__(self):
         if self.dbconn is not None:
