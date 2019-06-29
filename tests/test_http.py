@@ -33,30 +33,30 @@ class RequestTestCase(TestCase):
         self.assertEqual(req.get_method(), 'POST')
 
 
-# @mock.patch('ssl.get_server_certificate')
-# @mock.patch('urlopen')
-# class LittleRequestTestCase(TestCase):
-#     def test_error_returns_response(self, mock_urlopen, mock_get_cert):
-#         e = HTTPError('http://www.google.com', 404, 'Some message', {}, None)
-#         mock_urlopen.side_effect = e
-#         response = http.request('GET', 'http://www.google.com')
-#         self.assertEqual(response, http.Response(status=404, headers={}, data=None))
-#
-#     def test_http_only(self, mock_urlopen, mock_get_cert):
-#         self.assertRaises(URLError, http.request, 'GET', 'ftp://google.com')
-#
-#     def test_good(self, mock_urlopen, mock_get_cert):
-#         mock_response = mock.Mock(name='resp')
-#         mock_response.getcode.return_value = 200
-#         mock_response.read.return_value = s.body
-#         mock_response.headers = {}
-#         mock_urlopen.return_value = mock_response
-#         response = http.request('GET', 'http://www.google.com')
-#         self.assertEqual(response, http.Response(status=200, headers={}, data=s.body))
-#
-#     def test_timeout_passed(self, mock_urlopen, mock_get_cert):
-#         http.request('GET', 'http://www.google.com', timeout=10)
-#         mock_urlopen.assert_called_once_with(mock.ANY, timeout=10)
+@mock.patch('ssl.get_server_certificate')
+@mock.patch('clay.http.urlopen')
+class LittleRequestTestCase(TestCase):
+    def test_error_returns_response(self, mock_urlopen, mock_get_cert):
+        e = HTTPError('http://www.google.com', 404, 'Some message', {}, None)
+        mock_urlopen.side_effect = e
+        response = http.request('GET', 'http://www.google.com')
+        self.assertEqual(response, http.Response(status=404, headers={}, data=None))
+
+    def test_http_only(self, mock_urlopen, mock_get_cert):
+        self.assertRaises(URLError, http.request, 'GET', 'ftp://google.com')
+
+    def test_good(self, mock_urlopen, mock_get_cert):
+        mock_response = mock.Mock(name='resp')
+        mock_response.getcode.return_value = 200
+        mock_response.read.return_value = s.body
+        mock_response.headers = {}
+        mock_urlopen.return_value = mock_response
+        response = http.request('GET', 'http://www.google.com')
+        self.assertEqual(response, http.Response(status=200, headers={}, data=s.body))
+
+    def test_timeout_passed(self, mock_urlopen, mock_get_cert):
+        http.request('GET', 'http://www.google.com', timeout=10)
+        mock_urlopen.assert_called_once_with(mock.ANY, timeout=10)
 
 
 def create_mock_http_connection():
