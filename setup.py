@@ -16,6 +16,7 @@ setup(
     description='Clay is a framework for building RESTful backend services using best practices.',
     install_requires=[
         'flask',
+        'flask_wtf'
     ],
     tests_require=[
         'nose',

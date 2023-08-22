@@ -4,6 +4,7 @@ import sys, six
 
 from flask import Flask
 import werkzeug.serving
+from flask_wtf.csrf import CSRFProtect
 
 from clay import config
 
@@ -30,6 +31,7 @@ flask_init = config.get('flask.init', {
 })
 
 app = Flask(**flask_init)
+CSRFProtect(app)
 app.debug = config.get('debug.enabled', False)
 app.config.update(config.get('flask.config', {}))
 application = app
